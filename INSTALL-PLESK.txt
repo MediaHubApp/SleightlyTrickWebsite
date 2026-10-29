@@ -151,6 +151,11 @@ files if present. Sessions do not need restoration. Never delete the private
 directory when updating code. Never put live private data in GitHub.
 
 Use the subscription's normal file ownership, with write access for PHP-FPM.
+For PUBLIC website files inside httpdocs, use file permissions 644 and
+directory permissions 755 (including httpdocs itself). The deployment ZIP
+records these modes explicitly. Files such as .htaccess and index.php must
+be readable by the web server. Leave the separate private data directory's
+restricted permissions unchanged; do not apply public permissions to it.
 Do not grant world-writable permissions. If creation fails, make the private
 folder alongside httpdocs and give the subscription/PHP user read/write access.
 For a non-standard document root, set storage_dir in app/config.php to an
@@ -158,6 +163,15 @@ absolute writable path outside ALL public roots; allow it in PHP open_basedir.
 The application refuses storage inside its public website directory.
 
 TROUBLESHOOTING
+- 403 Forbidden: in Plesk File Manager, check that httpdocs/index.php exists
+  directly inside the configured document root, not httpdocs/httpdocs. Set
+  PUBLIC files to 644 and PUBLIC directories to 755, including .htaccess
+  and httpdocs itself. The initial ZIP could retain owner-only permissions;
+  download the corrected ZIP, or repair the existing permissions in Plesk.
+  Do not change the separate private data directory. If the 403 remains,
+  open the domain's Logs and find the matching Apache/nginx error entry;
+  it can identify incorrect ownership, an unreadable .htaccess, a missing
+  directory index or a hosting access rule. Do not disable access protection.
 - Plesk placeholder: back up/rename the old index.html and confirm the actual
   document root contains index.php.
 - PHP downloads: enable PHP processing for the domain.

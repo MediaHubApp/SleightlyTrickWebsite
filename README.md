@@ -67,5 +67,9 @@ with your hosting account and actual video links. The test video is a tiny
 blank clip, not a customer's instructions, and is excluded from deployment.
 
 Build the deployment ZIP and checksums with `python3 tools/package.py`.
+Run `PHP_BIN=/workspace/.runtime/bin/php python3 tools/verify-package.py` to
+check explicit ZIP permissions, real unzip extraction, deployment layout,
+and the HTTP suite against the extracted website. Public files are packaged
+as `644` and directories as `755`, independently of local workspace modes.
 The package includes only deployable site files and the Plesk guide; it
 excludes Git metadata, development tools, tests, private data and credentials.
