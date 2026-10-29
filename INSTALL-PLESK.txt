@@ -1,0 +1,182 @@
+SLEIGHTLY TRICKY — PLESK EDITION 1.1.0
+====================================
+
+WHAT IS INCLUDED
+Your original website and stallholder editor, plus a customer instruction-video
+library. Each trick has its own page and shared password. Manage titles, page
+addresses, public summaries, private notes, videos, passwords and publication
+status from the Instruction videos tab in the admin panel.
+
+The backend uses PHP and private SQLite storage. It needs no Node.js, Composer,
+external database, or third-party login service.
+
+REQUIREMENTS
+- PHP 8.2 or later, with PDO, pdo_sqlite, fileinfo, JSON and sessions enabled.
+- HTTPS with a valid SSL certificate and a permanent HTTP-to-HTTPS redirect.
+- PHP must be able to create a private directory alongside httpdocs.
+- For images: upload_max_filesize=8M, post_max_size=10M or greater.
+- For private videos up to 200 MB: upload_max_filesize=200M,
+  post_max_size=210M, memory_limit=128M or higher. Increase PHP/web-server
+  request timeouts as needed for your upload speed. Plesk/nginx/Apache request
+  body limits must also allow the file. The application limit is 200,000,000
+  bytes; image uploads remain limited to 5,000,000 bytes.
+- The website is designed for the root of a domain, not a subdirectory.
+
+1. UPLOAD THE READY-TO-INSTALL ZIP
+Download releases/sleightly-tricky-website.zip from the GitHub repository.
+This deployment ZIP contains httpdocs/ and this guide. GitHub's own "Download
+ZIP" contains the source repository; use the ZIP in releases/ for installation.
+
+Back up your existing httpdocs AND private/sleightly-tricky directory first.
+In Plesk File Manager, open the domain folder that CONTAINS httpdocs. Upload
+and extract the deployment ZIP there, merging its httpdocs with your existing
+httpdocs. Alternatively, extract locally and upload ONLY the contents of its
+httpdocs directory into your site's document root.
+
+Expected layout:
+  <domain folder>/INSTALL-PLESK.txt
+  <domain folder>/httpdocs/index.php
+  <domain folder>/httpdocs/instructions.php
+  <domain folder>/httpdocs/instruction-video.php
+  <domain folder>/httpdocs/admin/
+  <domain folder>/httpdocs/app/
+  <domain folder>/httpdocs/assets/
+  <domain folder>/httpdocs/images/
+
+Do not create httpdocs/httpdocs. Do not put this guide, the deployment ZIP,
+Git metadata, tests or development tools in the public website. Remove the
+uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
+shared passwords, database, uploaded videos, or customer sessions.
+
+EXISTING SITE UPGRADE
+Keep private/sleightly-tricky and all its contents. Existing accounts, text,
+products and photos remain in place; the new table is created automatically.
+If app/config.php was customised, preserve its storage_dir and HTTPS settings.
+The new code accepts the original setup_key setting, so existing installations
+can keep their configuration. The instructions feature does not require a new
+owner account. Clear browser caches if old styling appears.
+
+2. SET PHP AND HTTPS
+Select PHP 8.2+ in Plesk, enable the extensions above, and set the document
+root to httpdocs. Enable SSL and the permanent HTTPS redirect. Do not disable
+HTTPS on the live site. No DNS or certificate settings are changed by the ZIP.
+
+3. CREATE AN OWNER LOGIN (NEW INSTALLATIONS ONLY)
+Open https://YOUR-DOMAIN/setup.php once. This creates the private storage and
+a unique setup code at:
+  <domain folder>/private/sleightly-tricky/setup-key.txt
+
+Read that file in Plesk File Manager OUTSIDE httpdocs. Copy the code into the
+setup form and choose your own email address and a password of at least 12
+characters. There is no default admin password and no shared setup code in
+this package. Do not put setup-key.txt in the public website or GitHub.
+
+If upgrading with an original app/config.php, its original setup code still
+applies. After an owner account exists, setup locks automatically. You can
+remove httpdocs/setup.php after setup. Keep the private setup-key.txt file:
+it also supplies the key for hashed rate-limit identifiers.
+
+4. CREATE CUSTOMER INSTRUCTION PAGES
+Sign in at https://YOUR-DOMAIN/admin/ and choose Instruction videos.
+
+- Click Add instruction page. Give it the trick name and a simple page
+  address such as svengali-deck. The title suggests an address automatically.
+- Add an optional PUBLIC summary. This appears before unlocking; do not put
+  any secret instructions or passwords here.
+- Paste a YouTube, Vimeo, or direct HTTPS .mp4 link, OR upload an MP4 privately.
+  A new link/upload replaces the selected video. For Vimeo unlisted videos,
+  include the complete privacy link. Provider embedding must be enabled.
+- Add optional PRIVATE notes. These appear only after unlocking.
+- Set the shared password printed with that trick. Matching is exact and
+  case-sensitive, including spaces. Keep your own secure record: passwords
+  are hashed and cannot be viewed later. Re-enter the password only to change
+  it; leaving the replacement field blank keeps the existing password.
+- Enable Publish this instruction page, then click Save instruction page.
+  A published page requires a video and a password. You can save a hidden
+  draft without a video. Each page currently supports one video.
+- Copy the customer link shown under Page address to print with the trick.
+  Keep this address unchanged after printing it. Changing it breaks old links.
+
+Instruction pages use their OWN Save button. Saving, hiding, changing a
+password or deleting takes effect immediately. The main Publish changes
+button still applies only to website text, products and photos.
+
+Customers select their trick at /instructions.php and enter its password.
+No customer account is needed. Access lasts two hours in that browser; Lock
+this page ends it sooner. Each trick must be unlocked separately. Replacing
+the shared password revokes existing unlocked sessions. Hiding or deleting a
+page blocks its page and uploaded video, even for previously unlocked users.
+The owner and existing editor accounts can manage instruction pages; only
+the owner can manage editor accounts.
+
+VIDEO PRIVACY AND HOSTING
+Private MP4 uploads are stored outside httpdocs and streamed through an
+endpoint that checks the current page, publication status, session, password
+and expiry. Byte-range support lets customers seek within the video.
+
+YouTube/Vimeo/external MP4 links are only included in HTML after unlocking.
+Those hosting services control the video itself: an unlocked viewer can see
+and share the external URL. Choose private uploads when access must also be
+checked by your server. No web player prevents screen recording or a buyer
+sharing a generic password. Use only videos you have permission to distribute.
+YouTube and Vimeo may process visitor data when their player loads after
+unlock; review your site's privacy notice for your chosen hosting service.
+
+Replacing/deleting a page does not automatically delete uploaded MP4 files,
+so an accidental edit cannot erase the original file. Unreferenced uploads
+are not streamable through the website. Periodically review private/videos
+with your administrator to reclaim disk space after a backup. Large videos
+use your hosting storage, bandwidth and PHP workers; use a video-hosting link
+for high traffic or very large files.
+
+5. EXISTING WEBSITE EDITOR
+- Website text: edit headings, paragraphs, trading days and public email.
+- Collection: change products, prices, descriptions and visibility.
+- Photos: upload your main photograph, banner and optional product images.
+- Publish changes saves those website changes.
+- Editor access: owner-only editor-account creation/removal; no emails sent.
+- My account: change your own admin password. It revokes other admin sessions.
+
+BACKUPS AND PERMISSIONS
+Private data is stored at:
+  <domain folder>/private/sleightly-tricky/site.sqlite
+  <domain folder>/private/sleightly-tricky/setup-key.txt
+  <domain folder>/private/sleightly-tricky/uploads/
+  <domain folder>/private/sleightly-tricky/videos/
+  <domain folder>/private/sleightly-tricky/sessions/
+
+Back up the database, setup key, images AND videos, plus the website files.
+Avoid writes while making a manual database copy; include SQLite companion
+files if present. Sessions do not need restoration. Never delete the private
+directory when updating code. Never put live private data in GitHub.
+
+Use the subscription's normal file ownership, with write access for PHP-FPM.
+Do not grant world-writable permissions. If creation fails, make the private
+folder alongside httpdocs and give the subscription/PHP user read/write access.
+For a non-standard document root, set storage_dir in app/config.php to an
+absolute writable path outside ALL public roots; allow it in PHP open_basedir.
+The application refuses storage inside its public website directory.
+
+TROUBLESHOOTING
+- Plesk placeholder: back up/rename the old index.html and confirm the actual
+  document root contains index.php.
+- PHP downloads: enable PHP processing for the domain.
+- Missing SQLite or fileinfo: enable the extension for the selected PHP version.
+- Upload fails: check PHP, nginx/Apache body limits, timeouts, disk space and
+  private directory permissions. Use MP4/H.264 with AAC for wide compatibility.
+- Hosted video will not play: check the full link, embedding permissions,
+  account restrictions and any domain restriction at the video provider.
+- Password rejected: check the exact printed password and capital letters.
+  After repeated failures, wait 15 minutes. An admin can set a replacement.
+- HTTPS required: use https:// with a valid certificate; do not disable it.
+- Server error: inspect Plesk Logs for permission, open_basedir or PHP errors.
+- Admin password forgotten: owner can recreate editor accounts; an owner
+  password reset needs a server administrator (no public email-reset endpoint).
+
+VALIDATION
+Local PHP 8.4 integration tests cover setup, original-site data migration and
+editing, permissions, password gates, CSRF, throttling, hidden/deleted pages,
+password revocation, protected MP4 streaming/ranges, and input validation.
+Browser validation is documented in README.md in the source repository.
+The actual Plesk host has not been accessed; verify its SSL, extensions,
+permissions, upload limits and your real videos after deployment.

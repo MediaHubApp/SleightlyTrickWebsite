@@ -1,0 +1,9 @@
+# Never commit live accounts, passwords, sessions, videos or databases.
+/private/
+*.sqlite
+*.sqlite-*
+*.log
+.env
+.env.*
+__pycache__/
+.DS_Store

@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /setup.php
+Disallow: /app/
+Disallow: /instructions.php
+Disallow: /instruction-video.php
