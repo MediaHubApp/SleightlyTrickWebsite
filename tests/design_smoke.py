@@ -14,7 +14,7 @@ try:
     code,raw,_=server.admin.request('/admin/api.php?action=upload-video',body,{'Content-Type':f'multipart/form-data; boundary={boundary}','X-CSRF-Token':server.csrf})
     assert code==201
     source=__import__('json').loads(raw)['source']
-    for title,slug,summary in [('Invisible Deck','invisible-deck','One thought-of card. One impossible reveal. Let’s make it happen.'),('Cups and Balls','cups-and-balls','A timeless classic, ready for your own little twist.'),('Cardtoon 2','cardtoon-2','Bring a little pocket-sized performance to life.')]:
+    for title,slug,summary in [('Invisible Deck','invisible-deck','Instructions for the Invisible Deck.'),('Cups and Balls','cups-and-balls','Learn the Cups and Balls routine.'),('Cardtoon 2','cardtoon-2','How to use your Cardtoon 2 deck.')]:
         code,data=server.admin.api('save-instruction',{'title':title,'slug':slug,'summary':summary,'notes':'Take your time and practise the handling before your first performance.\n\nRewatch any details you want to work on. Keep the secret, and enjoy that first reaction.','password':'Practice-Secret','video_source':source,'published':True},server.csrf)
         assert code==200,data
     with sync_playwright() as p:
@@ -32,6 +32,8 @@ try:
         page.goto(server.base+'/')
         capture(page,'home-desktop.png')
         page.screenshot(path=str(artifacts/'home-desktop-top.png'),animations='disabled')
+        page.locator('.cards-art').screenshot(path=str(artifacts/'card-art.png'),animations='disabled')
+        page.evaluate('scrollTo({top:0,behavior:"instant"})')
         search=page.get_by_role('searchbox',name='Find a magic trick…')
         search.fill('Invisible Deck')
         expect(page.locator('#magic-grid .product:visible')).to_have_count(1)
@@ -80,7 +82,7 @@ try:
                 expect(menu).to_have_attribute('aria-expanded','false')
                 menu.click()
                 view.get_by_role('navigation',name='Main navigation').get_by_role('link',name='Instruction videos').click()
-                expect(view.get_by_role('heading',name='Learn the secret.')).to_be_visible()
+                expect(view.get_by_role('heading',name='Instruction videos.')).to_be_visible()
                 expect(view.get_by_role('button',name='Open menu')).to_have_attribute('aria-expanded','false')
             context.close()
         nojs=browser.new_context(java_script_enabled=False,viewport={'width':390,'height':844})
@@ -98,7 +100,7 @@ try:
         reduced=browser.new_context(reduced_motion='reduce')
         view=reduced.new_page()
         view.goto(server.base+'/')
-        assert view.locator('.hero-note').evaluate('el=>getComputedStyle(el).animationName')=='none'
+        assert view.locator('.hero-image img').evaluate('el=>getComputedStyle(el).animationName')=='none'
         assert view.locator('.reveal-pending').count()==0
         assert not errors,errors
         browser.close()

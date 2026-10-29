@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.2.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.3.0
 ====================================
 
 WHAT IS INCLUDED
@@ -49,11 +49,21 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
-Version 1.2 refreshes the homepage, instruction library, password and video
-pages, sign-in screens and admin styling. It adds collection/library search,
-mobile navigation improvements and optional animations that respect reduced
-motion preferences. Fonts are included locally; no external font account
-or build process is required.
+Version 1.3 introduces a new layout, full-width still-life opening, broader
+typography and simplified catalogue and instruction pages. Decorative section
+labels and repeated placeholder artwork are removed. Search, mobile menus,
+password visibility and reduced-motion support remain available.
+
+Unchanged stock headings and descriptions are refreshed. Custom text,
+product names, prices, visibility and uploaded photos are preserved. The
+editor shows the refreshed content, which is stored when you next publish.
+The old location-line and short product labels are no longer used.
+
+The new hero artwork shows three upside-down magician’s cups, with solid
+bases uppermost. The displayed card illustrations have correct suit colours,
+rank indices and pip counts. The still life is illustrative artwork; replace
+it through Photos if you prefer your own picture. Use a wide landscape image
+with the subject toward the right for the desktop headline layout.
 
 Keep private/sleightly-tricky and all its contents. Existing accounts, text,
 products and photos remain in place; the new table is created automatically.
@@ -194,7 +204,8 @@ TROUBLESHOOTING
   password reset needs a server administrator (no public email-reset endpoint).
 
 VALIDATION
-Local PHP 8.4 integration tests cover setup, original-site data migration and
+Local PHP 8.4 tests cover card pip counts, suit colours, opposing indices,
+compatible stock-copy upgrades, setup, original-site data migration and
 editing, permissions, password gates, CSRF, throttling, hidden/deleted pages,
 password revocation, protected MP4 streaming/ranges, and input validation.
 Browser validation also covers five viewport widths, collection/library

@@ -4,23 +4,32 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
-## The 1.2 design refresh
+## The 1.3 redesign
 
-A consistent visual design across the homepage, instruction library, password
-screen, video player, sign-in pages and admin. It keeps the original burgundy,
-warm cream and charcoal palette, with self-hosted Instrument Serif and Manrope,
-playing-card illustrations, a new hero, polished collections and a shared
-navigation/footer. It adds searchable tricks and instructions, subtle scroll
-reveals, card interactions, a mobile menu, password visibility control and FAQs.
-Motion respects the user's reduced-motion preference, and public navigation
-and password forms work without JavaScript. Existing editable content and
-private data remain compatible.
+A new layout and visual direction: a full-width burgundy still life, broader
+Libre Caslon typography, readable body text, a text-led trick catalogue and
+a larger card study alongside the deck list. The instruction library and
+password screens use the same restrained layout. Decorative section labels,
+floating slogan cards and repeated placeholder artwork have been removed.
+Stock copy is shorter and more direct.
+
+The still-life artwork shows three inverted magician’s cups with closed bases
+uppermost. Face-up cards are drawn as exact SVGs: black spades/clubs, red
+hearts/diamonds, matching opposing indices, standard poker-card proportions
+and correct pip counts. These are illustrations, not photographs of stock.
 
 ![Homepage design](docs/redesign/homepage.png)
 
-[View the instruction library design](docs/redesign/instruction-library.png).
-Screenshots use sample instruction pages; the deployment ZIP includes no demo
-customer pages, passwords or private videos.
+[Instruction library](docs/redesign/instruction-library.png) ·
+[Card artwork](docs/redesign/card-art.png).
+Screenshots use sample instruction pages. No demo customer pages, passwords
+or private videos are included in the installation ZIP.
+
+Existing accounts, products, prices and private videos remain compatible.
+Unchanged stock copy is refreshed for the new design; custom copy, prices,
+photos and product settings are preserved. Changes are reflected in the
+editor and become stored content when you next publish. The old decorative
+location-line and product-label settings are no longer displayed or edited.
 
 ## Download and install
 
@@ -72,10 +81,11 @@ PHP_BIN=/workspace/.runtime/bin/php python3 tests/browser_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
 ```
 
-The HTTP suite has 10 passing tests covering original-site setup/migration,
+The automated suite has 13 passing tests covering original-site setup/migration,
 editing, customer gates, CSRF, rate limiting, expiry, per-page access,
 password replacement, hiding/deleting, private uploads and byte ranges,
-malformed inputs, editor permissions and revocation. It uses temporary data.
+malformed inputs, editor permissions and revocation, exact card pip counts/colours,
+card indices, and compatible copy upgrades. It uses temporary data.
 The browser smoke test requires Python Playwright and `/usr/bin/chromium`.
 It exercises admin page creation, real video upload, saved-page reload,
 mobile password entry and MP4 playback, password replacement, hiding,
@@ -99,7 +109,7 @@ excludes Git metadata, development tools, tests, private data and credentials.
 
 ## Font licences
 
-Instrument Serif and Manrope are self-hosted from the official Google Fonts
+Libre Caslon Display and Manrope are self-hosted from the official Google Fonts
 repository under the SIL Open Font License. Their licence notices are included
 in [assets/fonts](assets/fonts). Site fonts and interface scripts are served locally. External video providers
 load only after a customer unlocks a lesson.

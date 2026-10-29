@@ -15,4 +15,4 @@ try{
  }
 }catch(DomainException $e){$error=$e->getMessage();if($e->getCode()===429)http_response_code(429);}catch(Throwable $e){error_log($e->getMessage());http_response_code(503);auth_page('Please try again.','The editor is temporarily unavailable.','<p>Check the PHP and folder settings in your installation guide.</p>');exit;}
 $body='<form method="post" class="auth-form"><input type="hidden" name="_csrf" value="'.h(csrf()).'"><label class="field"><span>Email address</span><input type="email" name="email" required autocomplete="username"></label><label class="field"><span>Password</span><input type="password" name="password" required autocomplete="current-password"></label><button class="button red" type="submit">Sign in</button></form>';
-auth_page('Stallholder entrance.','Sign in to update your collection, prices and stall details.',$body,$error);
+auth_page('Sign in.','Sign in to update your collection, prices and stall details.',$body,$error);

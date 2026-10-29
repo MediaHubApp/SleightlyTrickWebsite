@@ -27,9 +27,6 @@
 
   // CSS stays readable with JavaScript disabled. Only unseen elements are hidden.
   if ('IntersectionObserver' in window) {
-    const header = document.querySelector('.site-header');
-    const topline = document.querySelector('.site-topline');
-    if (topline && header) new IntersectionObserver(([entry]) => header.classList.toggle('is-scrolled', !entry.isIntersecting)).observe(topline);
     const reveals = [...document.querySelectorAll('[data-reveal]')];
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -44,8 +41,6 @@
       observer.observe(el);
     });
     reduced.addEventListener('change', e => { if (e.matches) reveals.forEach(el => el.classList.remove('reveal-pending')); });
-    const hero = document.querySelector('.hero-visual');
-    if (hero) new IntersectionObserver(([entry]) => hero.classList.toggle('motion-active', entry.isIntersecting)).observe(hero);
   }
 
   document.querySelectorAll('[data-enhance]').forEach(el => el.hidden = false);

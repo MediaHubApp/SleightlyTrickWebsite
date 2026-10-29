@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -35,7 +35,7 @@ function db(): PDO {
 function installed(): bool { return (int)db()->query('SELECT COUNT(*) FROM users')->fetchColumn()>0; }
 function content(bool $fallback=false): array {
  try { if($fallback&&!is_file(config()['storage_dir'].'/site.sqlite'))return ['content'=>defaults(),'version'=>0];$row=db()->query('SELECT body, version FROM content WHERE id=1')->fetch();
- return $row?['content'=>json_decode($row['body'],true,512,JSON_THROW_ON_ERROR),'version'=>(int)$row['version']]:['content'=>defaults(),'version'=>0];
+ return $row?['content'=>design_content(json_decode($row['body'],true,512,JSON_THROW_ON_ERROR)),'version'=>(int)$row['version']]:['content'=>defaults(),'version'=>0];
  }catch(Throwable $e){error_log('Sleightly Tricky: '.$e->getMessage());if($fallback)return ['content'=>defaults(),'version'=>0];throw $e;}
 }
 function session_boot(): void {
@@ -110,9 +110,9 @@ function upload_image(): string {
 }
 function auth_page(string $title,string $intro,string $body,?string $error=null): void {
  echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>'.h($title).' | Sleightly Tricky</title>';
- site_assets();
+ site_assets(true);
  echo '</head><body class="auth-page"><main class="login-shell">';brand();
- echo '<div class="login-panel"><p class="eyebrow">THE STALLHOLDER’S DESK</p><h1>'.h($title).'</h1><p>'.h($intro).'</p>';
+ echo '<div class="login-panel"><h1>'.h($title).'</h1><p>'.h($intro).'</p>';
  if($error)echo '<div class="editor-error" role="alert">'.h($error).'</div>';
  echo $body.'<a class="text-link" href="/">Back to the website '.icon('arrow-up').'</a></div></main></body></html>';
 }
