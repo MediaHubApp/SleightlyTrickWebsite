@@ -2,6 +2,7 @@
 declare(strict_types=1);
 function icon(string $name, string $class=''): string {
  $paths=[
+  'close'=>'<path d="m6 6 12 12M6 18 18 6"/>',
   'arrow'=>'<path d="M4 12h15M13 5l7 7-7 7"/>',
   'arrow-up'=>'<path d="M6 18 18 6M6 6h12v12"/>',
   'chevron'=>'<path d="m9 5 7 7-7 7"/>',
@@ -15,7 +16,7 @@ function icon(string $name, string $class=''): string {
 }
 function site_assets(bool $admin=false): void { ?>
 <link rel="icon" href="/favicon.svg">
-<link rel="preload" href="/assets/fonts/LibreCaslonDisplay-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<?php if($admin): ?><link rel="preload" href="/assets/fonts/LibreCaslonDisplay-Regular.ttf" as="font" type="font/ttf" crossorigin><?php endif; ?>
 <link rel="preload" href="/assets/fonts/Manrope-Variable.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="stylesheet" href="/assets/site.css?v=<?=h(APP_VERSION)?>">
 <?php if($admin): ?><link rel="stylesheet" href="/assets/admin.css?v=<?=h(APP_VERSION)?>"><?php endif; ?>
@@ -23,17 +24,17 @@ function site_assets(bool $admin=false): void { ?>
 <script src="/assets/site.js?v=<?=h(APP_VERSION)?>" defer></script>
 <?php }
 function brand(string $class=''): void { ?>
-<a class="wordmark <?=h($class)?>" href="/" aria-label="Sleightly Tricky home"><span class="brand-name">Sleightly Tricky<span aria-hidden="true">.</span></span></a>
+<a class="wordmark <?=h($class)?>" href="/" aria-label="Sleightly Tricky home"><span class="brand-mark" aria-hidden="true">♦</span><span class="brand-name">Sleightly<br>Tricky<span class="brand-stop">.</span></span></a>
 <?php }
 function site_header(string $active=''): void { ?>
-<a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header"><div class="wrap header-inner"><?php brand(); ?>
-<nav class="main-nav" id="main-navigation" aria-label="Main navigation"><a href="/#magic">Magic tricks</a><a href="/#cards">Playing cards</a><a href="/instructions.php" <?=$active==='instructions'?'aria-current="page"':''?>>Instruction videos</a><a class="nav-visit" href="/#visit">Visit us <?=icon('arrow-up')?></a></nav>
+<a class="skip-link" href="#main">Skip to content</a><div class="scroll-progress" aria-hidden="true"></div>
+<header class="site-header"><div class="header-inner"><?php brand(); ?>
+<nav class="main-nav" id="main-navigation" aria-label="Main navigation"><a href="/#magic">Magic tricks</a><a href="/#cards">Playing cards</a><a href="/instructions.php" <?=$active==='instructions'?'aria-current="page"':''?>>Instruction videos</a><a class="nav-visit" href="/#visit">Visit the stall <?=icon('arrow-up')?></a></nav>
 <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation" aria-label="Open menu"><span class="menu-lines" aria-hidden="true"></span><span>Menu</span></button>
 </div></header>
 <?php }
 function site_footer(): void { ?>
-<footer class="site-footer"><div class="wrap"><div class="footer-main"><div><?php brand('footer-brand'); ?><p>Magic tricks &amp; playing cards.<br>Sudbury, Suffolk.</p></div><nav aria-label="Footer navigation"><a href="/#magic">Magic tricks</a><a href="/#cards">Playing cards</a><a href="/instructions.php">Instruction videos</a><a href="/#story">About us</a><a href="/#visit">Visit the stall</a></nav></div><div class="footer-bottom"><span>© <?=date('Y')?> Sleightly Tricky</span><a href="/admin/">Stallholder login <?=icon('arrow-up')?></a></div></div></footer>
+<footer class="site-footer"><div class="wrap"><div class="footer-top"><h2>See you<br>at the stall.</h2><a class="footer-visit" href="/#visit" aria-label="Find the stall"><?=icon('arrow-up')?></a></div><div class="footer-main"><div><?php brand('footer-brand'); ?><p>Magic tricks &amp; playing cards.<br>Sudbury, Suffolk.</p></div><nav aria-label="Footer navigation"><a href="/#magic">Magic tricks</a><a href="/#cards">Playing cards</a><a href="/instructions.php">Instruction videos</a><a href="/#story">About us</a><a href="/#visit">Visit the stall</a></nav></div><div class="footer-bottom"><span>© <?=date('Y')?> Sleightly Tricky</span><a href="/admin/">Stallholder login <?=icon('arrow-up')?></a></div></div></footer>
 <?php }
 function search_control(string $id,string $placeholder): void { ?>
 <div class="collection-search" data-enhance hidden><label for="<?=h($id)?>" class="sr-only"><?=h($placeholder)?></label><?=icon('search')?><input type="search" id="<?=h($id)?>" placeholder="<?=h($placeholder)?>" autocomplete="off"><button type="button" class="search-clear" data-search-clear="<?=h($id)?>" aria-label="Clear search" hidden>×</button></div>
@@ -67,3 +68,27 @@ function design_content(array $content): array {
  unset($product);
  return $content;
 }
+
+/** A generic engraved back, deliberately unbranded and with no face pips. */
+function card_back(bool $black=false): void { ?>
+<svg class="playing-card card-back" viewBox="0 0 250 350" aria-hidden="true"><rect x="1" y="1" width="248" height="348" rx="12" fill="#fffaf0" stroke="#cfc5b6"/><rect x="14" y="14" width="222" height="322" rx="5" fill="<?=$black?'#272c2b':'#872536'?>"/><svg x="22" y="22" width="206" height="306" viewBox="0 0 206 306"><g stroke="#f6ddc3" stroke-width=".8" opacity=".45"><?php for($x=-330;$x<520;$x+=19): ?><path d="M<?=$x?> 0l306 306M<?=$x?> 0l-306 306"/><?php endfor; ?></g></svg><rect x="22" y="22" width="206" height="306" rx="3" fill="none" stroke="#ecd1b0" stroke-width="1"/><ellipse cx="125" cy="175" rx="66" ry="96" fill="<?=$black?'#272c2b':'#872536'?>" stroke="#ecd1b0" stroke-width="1"/><ellipse cx="125" cy="175" rx="57" ry="85" fill="none" stroke="#ecd1b0" stroke-width=".65"/><path d="m125 126 26 49-26 49-26-49Z" fill="none" stroke="#ecd1b0" stroke-width="1"/></svg>
+<?php }
+function product_visual(array $p,int $index=0,bool $deck=false): void {
+ if($p['image']){echo '<img class="product-image" src="'.h($p['image']).'" alt="'.h($p['name']).'" loading="lazy" width="600" height="500">';return;}
+ $kind=['cups'=>'cups','rope'=>'rope','prisma'=>'light','ghost'=>'blank','bwave'=>'packet'][$p['id']]??'cards';
+ $suits=['spades','hearts','clubs','diamonds'];
+ ?>
+<div class="product-scene scene-<?=h($kind)?> tone-<?=$index%4?> <?=$deck?'deck-scene':''?>" aria-hidden="true"><span class="scene-shadow"></span>
+<?php if($kind==='cups'): ?><img class="prop-photo" src="/images/still-life.png" alt="" loading="lazy" width="1536" height="1024">
+<?php elseif($kind==='rope'): ?>
+<svg class="rope-art" viewBox="0 0 400 300" fill="none"><path d="M70 210C40 90 128 45 217 71S329 208 249 232 118 181 145 129 284 126 267 196 174 252 127 213" stroke="#958163" stroke-width="17" stroke-linecap="round"/><path d="M70 210C40 90 128 45 217 71S329 208 249 232 118 181 145 129 284 126 267 196 174 252 127 213" stroke="#faf0d4" stroke-width="13" stroke-linecap="round"/><path d="M70 210C40 90 128 45 217 71S329 208 249 232 118 181 145 129 284 126 267 196 174 252 127 213" stroke="#d6c5a3" stroke-width="13" stroke-dasharray="1 5"/><path d="m69 211-1 14m60-10 13 12" stroke="#af2433" stroke-width="11" stroke-linecap="round"/></svg>
+<?php elseif($kind==='light'): ?><span class="light-orbit"></span><span class="light-orbit light-orbit-two"></span><span class="light-dot"></span><span class="light-dot light-dot-two"></span>
+<?php else: ?>
+<div class="scene-card scene-card-one"><?php card_back($index%2===1); ?></div>
+<div class="scene-card scene-card-two"><?php if($kind==='blank'): ?><svg class="playing-card" viewBox="0 0 250 350"><rect x="1" y="1" width="248" height="348" rx="12" fill="#fffcf3" stroke="#d7d1c5"/></svg><?php else: playing_card($suits[$index%4],$index%3===0?7:1); endif; ?></div>
+<?php if($kind==='packet'): ?><div class="scene-card scene-card-three"><?php card_back(); ?></div><?php endif; ?>
+<?php endif; ?></div>
+<?php }
+function product_dialog(): void { ?>
+<dialog class="product-dialog" id="product-dialog" aria-labelledby="dialog-name"><button class="dialog-close" type="button" aria-label="Close product details"><?=icon('close')?></button><div class="dialog-art" id="dialog-art"></div><div class="dialog-copy"><div class="dialog-heading"><h2 id="dialog-name"></h2><span id="dialog-price"></span></div><p id="dialog-description"></p><p class="dialog-note">Visit the stall to see the product and check availability.</p><a class="button red" href="/#visit" id="dialog-visit">Find the stall <?=icon('arrow-up')?></a></div></dialog>
+<?php }

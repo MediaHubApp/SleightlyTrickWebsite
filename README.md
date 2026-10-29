@@ -4,26 +4,36 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
-## The 1.3 redesign
+## The 1.4 immersive redesign
 
-A new layout and visual direction: a full-width burgundy still life, broader
-Libre Caslon typography, readable body text, a text-led trick catalogue and
-a larger card study alongside the deck list. The instruction library and
-password screens use the same restrained layout. Decorative section labels,
-floating slogan cards and repeated placeholder artwork have been removed.
-Stock copy is shorter and more direct.
+An immersive, modern interface in burgundy, cream and charcoal: layered hero
+artwork, a floating navigation frame, visual collection routes, dimensional
+product scenes and a swipeable deck gallery. Product details open in native
+keyboard-accessible dialogs with complete descriptions and prices. The
+instruction library, password gate and video player use the same visual system.
 
-The still-life artwork shows three inverted magician’s cups with closed bases
-uppermost. Face-up cards are drawn as exact SVGs: black spades/clubs, red
-hearts/diamonds, matching opposing indices, standard poker-card proportions
-and correct pip counts. These are illustrations, not photographs of stock.
+Motion includes staggered scroll reveals, paper/card hover transitions,
+subtle pointer depth on the hero, a reading-progress line and dialog entrance
+animations. Reduced-motion preferences are respected. Nothing scrolls or
+advances automatically, and the public catalogue remains readable without
+JavaScript. There are no decorative section labels or invented purchase links.
 
-![Homepage design](docs/redesign/homepage.png)
+[![Homepage](docs/redesign/homepage.png)](docs/redesign/homepage-full.png)
 
-[Instruction library](docs/redesign/instruction-library.png) ·
-[Card artwork](docs/redesign/card-art.png).
-Screenshots use sample instruction pages. No demo customer pages, passwords
-or private videos are included in the installation ZIP.
+[Full homepage](docs/redesign/homepage-full.png) ·
+[Mobile](docs/redesign/mobile.png) ·
+[Product details](docs/redesign/product-details.png) ·
+[Instruction library](docs/redesign/instruction-library.png).
+
+![Product detail view](docs/redesign/product-details.png)
+
+The cup artwork retains the three correctly inverted cups. Faces are drawn
+as exact SVGs with black spades/clubs, red hearts/diamonds, matching opposing
+indices and correct pip counts. Generic card backs and prop illustrations
+are unbranded; actual uploaded product photos take priority. The new tabletop
+still life shows only face-down cards. These images are illustrative, not
+photographs of the products for sale. Screenshots use sample instruction pages;
+no demo passwords, customer pages or private videos are included in the ZIP.
 
 Existing accounts, products, prices and private videos remain compatible.
 Unchanged stock copy is refreshed for the new design; custom copy, prices,
@@ -94,6 +104,9 @@ deleting, responsive layout and JavaScript error checks.
 The design smoke test checks five viewport widths (320–1440px), search,
 password visibility, FAQs, keyboard/menu interactions, JavaScript-disabled
 navigation and native form submission, reduced motion and horizontal overflow.
+It also checks product dialogs, focus wrapping/return, gallery button and keyboard
+controls, mobile product details, pointer-depth animation and cancellation when
+the motion preference changes.
 
 Real YouTube/Vimeo playback and production Plesk settings require validation
 with your hosting account and actual video links. The test video is a tiny

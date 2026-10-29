@@ -43,6 +43,7 @@
     reduced.addEventListener('change', e => { if (e.matches) reveals.forEach(el => el.classList.remove('reveal-pending')); });
   }
 
+  document.body.classList.add('is-enhanced');
   document.querySelectorAll('[data-enhance]').forEach(el => el.hidden = false);
   document.querySelectorAll('[data-filter-grid]').forEach(grid => {
     const input = document.getElementById(grid.dataset.filterGrid);
@@ -80,5 +81,104 @@
       button.setAttribute('aria-label', show ? 'Hide trick password' : 'Show trick password');
     });
   });
+  // Native dialogs retain keyboard focus and expose only public catalogue data.
+  const dialog = document.getElementById('product-dialog');
+  let lastProductButton = null;
+  if (dialog && typeof dialog.showModal === 'function') {
+    document.querySelectorAll('[data-product-open]').forEach(button => {
+      button.addEventListener('click', () => {
+        const article = button.closest('.product, .deck');
+        if (!article) return;
+        const art = article.querySelector('.product-visual').cloneNode(true);
+        art.querySelectorAll('.price, .deck-price').forEach(el => el.remove());
+        art.querySelectorAll('[loading]').forEach(el => el.loading = 'eager');
+        document.getElementById('dialog-art').replaceChildren(art);
+        document.getElementById('dialog-name').textContent = article.querySelector('h3').textContent;
+        document.getElementById('dialog-price').textContent = article.querySelector('.price, .deck-price').textContent;
+        document.getElementById('dialog-description').textContent = article.querySelector('.product-description').textContent;
+        lastProductButton = button;
+        dialog.showModal();
+        document.body.classList.add('dialog-open');
+      });
+    });
+    dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const controls = [...dialog.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]')].filter(el => el.getClientRects().length > 0);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (e.shiftKey && document.activeElement === first) {e.preventDefault();last?.focus();}
+      else if (!e.shiftKey && document.activeElement === last) {e.preventDefault();first?.focus();}
+    });
+    dialog.addEventListener('click', e => {
+      if (e.target !== dialog) return;
+      const box = dialog.getBoundingClientRect();
+      if (e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      document.body.classList.remove('dialog-open');
+      lastProductButton?.focus({preventScroll: true});
+    });
+    document.getElementById('dialog-visit').addEventListener('click', () => dialog.close());
+  } else {
+    document.querySelectorAll('[data-product-open]').forEach(button => button.hidden = true);
+    document.body.classList.remove('is-enhanced');
+  }
+
+  document.querySelectorAll('[data-rail]').forEach(rail => {
+    const buttons = [...document.querySelectorAll('[data-rail-target="' + rail.id + '"]')];
+    let pending = false;
+    const update = () => {
+      buttons.forEach(button => {
+        const backwards = Number(button.dataset.railStep) < 0;
+        button.disabled = backwards ? rail.scrollLeft <= 2 : rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 3;
+      });
+      pending = false;
+    };
+    const move = step => {
+      const card = rail.firstElementChild;
+      const distance = card ? card.getBoundingClientRect().width + parseFloat(getComputedStyle(rail).gap || 0) : rail.clientWidth;
+      rail.scrollBy({left: step * distance, behavior: reduced.matches ? 'instant' : 'smooth'});
+    };
+    buttons.forEach(button => button.addEventListener('click', () => move(Number(button.dataset.railStep))));
+    rail.addEventListener('keydown', e => {
+      if (e.target !== rail || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      e.preventDefault();move(e.key === 'ArrowLeft' ? -1 : 1);
+    });
+    rail.addEventListener('scroll', () => {if (!pending) {pending = true;requestAnimationFrame(update);}}, {passive: true});
+    window.addEventListener('resize', update);
+    update();
+  });
+
+  // Fine-pointer depth stays small; no perpetual animation or touch interception.
+  const depth = document.querySelector('[data-depth]');
+  const fine = window.matchMedia('(pointer: fine)');
+  let depthAnimation = null;
+  let depthFrame = null;
+  let pointer = null;
+  const resetDepth = () => {
+    if (depthFrame !== null) cancelAnimationFrame(depthFrame);
+    depthFrame = null;
+    depthAnimation?.cancel();depthAnimation = null;
+  };
+  if (depth) {
+    const surface = depth.querySelector('.hero-image');
+    depth.addEventListener('pointermove', e => {
+      if (reduced.matches || !fine.matches || !surface.animate) return;
+      pointer = {x: e.clientX, y: e.clientY};
+      if (depthFrame !== null) return;
+      depthFrame = requestAnimationFrame(() => {
+        depthFrame = null;
+        const box = depth.getBoundingClientRect();
+        const x = Math.max(-1, Math.min(1, (pointer.x - box.left) / box.width * 2 - 1));
+        const y = Math.max(-1, Math.min(1, (pointer.y - box.top) / box.height * 2 - 1));
+        const current = getComputedStyle(surface).transform;
+        depthAnimation?.cancel();
+        depthAnimation = surface.animate([{transform: current}, {transform: 'perspective(1000px) rotateX(' + (-y * 1.8) + 'deg) rotateY(' + (x * 2.1) + 'deg)'}], {duration: 300, easing: 'ease-out', fill: 'forwards'});
+      });
+    });
+    depth.addEventListener('pointerleave', resetDepth);
+    reduced.addEventListener('change', e => {if (e.matches) resetDepth();});
+  }
+
   document.querySelector('.instruction-gate [role="alert"]')?.focus();
 })();

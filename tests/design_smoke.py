@@ -38,6 +38,30 @@ try:
         search.fill('Invisible Deck')
         expect(page.locator('#magic-grid .product:visible')).to_have_count(1)
         expect(page.locator('[data-filter-count="magic-grid"]')).to_have_text('1 result found')
+        trigger=page.locator('#magic-grid [data-product-open]').first
+        trigger.click()
+        modal=page.get_by_role('dialog',name='Invisible Deck')
+        expect(modal).to_be_visible()
+        expect(page.locator('#dialog-price')).to_have_text('£10')
+        expect(page.locator('#dialog-description')).to_have_text('Reveal a freely named card as the only reversed card in the deck.')
+        expect(page.get_by_role('button',name='Close product details')).to_be_focused()
+        page.screenshot(path=str(artifacts/'product-details-desktop.png'),animations='disabled')
+        page.keyboard.press('Shift+Tab')
+        expect(page.locator('#dialog-visit')).to_be_focused()
+        page.keyboard.press('Tab')
+        expect(page.get_by_role('button',name='Close product details')).to_be_focused()
+        page.keyboard.press('Escape')
+        expect(modal).not_to_be_visible()
+        expect(trigger).to_be_focused()
+        rail=page.locator('#deck-rail')
+        page.get_by_role('button',name='Next playing cards').click()
+        page.wait_for_function('() => document.getElementById("deck-rail").scrollLeft > 50')
+        page.get_by_role('button',name='Previous playing cards').click()
+        page.wait_for_function('() => document.getElementById("deck-rail").scrollLeft < 5')
+        rail.focus()
+        page.keyboard.press('ArrowRight')
+        page.wait_for_function('() => document.getElementById("deck-rail").scrollLeft > 50')
+
         search.fill('no such trick exists')
         expect(page.locator('[data-filter-empty="magic-grid"]')).to_be_visible()
         page.get_by_role('button',name='Clear search').click()
@@ -72,6 +96,14 @@ try:
                 view.evaluate('document.fonts.ready')
                 assert view.evaluate('document.documentElement.scrollWidth <= innerWidth'),f'Horizontal overflow: {width}px {path}'
                 if width in [390,768]:capture(view,f'{label}-{width}.png')
+                if width==390 and label=='home':
+                    view.screenshot(path=str(artifacts/'home-mobile-top.png'),animations='disabled')
+                    view.locator('#magic-grid [data-product-open]').first.click()
+                    expect(view.get_by_role('dialog',name='Invisible Deck')).to_be_visible()
+                    assert view.evaluate('document.documentElement.scrollWidth <= innerWidth'),'Mobile product dialog overflow'
+                    view.screenshot(path=str(artifacts/'product-details-mobile.png'),animations='disabled')
+                    view.get_by_role('button',name='Close product details').click()
+
             if width<961:
                 view.goto(server.base+'/')
                 menu=view.get_by_role('button',name='Open menu')
@@ -102,8 +134,19 @@ try:
         view.goto(server.base+'/')
         assert view.locator('.hero-image img').evaluate('el=>getComputedStyle(el).animationName')=='none'
         assert view.locator('.reveal-pending').count()==0
+        # Pointer depth activates only with motion enabled and cancels on preference change.
+        motion=browser.new_context(viewport={'width':1440,'height':1000})
+        moving=motion.new_page()
+        moving.on('pageerror',lambda e:errors.append(str(e)))
+        moving.goto(server.base+'/')
+        box=moving.locator('[data-depth]').bounding_box()
+        moving.mouse.move(box['x']+box['width']*.8,box['y']+box['height']*.3)
+        moving.wait_for_function('() => getComputedStyle(document.querySelector(".hero-image")).transform !== "none"')
+        moving.emulate_media(reduced_motion='reduce')
+        moving.wait_for_function('() => getComputedStyle(document.querySelector(".hero-image")).transform === "none"')
+
         assert not errors,errors
         browser.close()
-    print('Design smoke passed: five viewport widths, collection/library search, show/hide password, FAQ, mobile menu keyboard/links, no-JS navigation/unlock, reduced motion, no horizontal overflow or JavaScript errors.')
+    print('Design smoke passed: five viewport widths, collection/library search, show/hide password, FAQ, mobile menu keyboard/links, no-JS navigation/unlock, reduced motion, product dialogs/focus, gallery controls, pointer depth, no horizontal overflow or JavaScript errors.')
 finally:
     server.tearDownClass()

@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.3.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.4.0
 ====================================
 
 WHAT IS INCLUDED
@@ -49,10 +49,11 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
-Version 1.3 introduces a new layout, full-width still-life opening, broader
-typography and simplified catalogue and instruction pages. Decorative section
-labels and repeated placeholder artwork are removed. Search, mobile menus,
-password visibility and reduced-motion support remain available.
+Version 1.4 uses an immersive modern layout with layered hero artwork,
+visual product galleries, product-detail dialogs, a swipeable deck collection
+and matching instruction pages. Motion respects reduced-motion settings;
+public content and password forms also work without JavaScript. The gallery
+has button, keyboard and touch controls and never advances automatically.
 
 Unchanged stock headings and descriptions are refreshed. Custom text,
 product names, prices, visibility and uploaded photos are preserved. The
@@ -63,7 +64,9 @@ The new hero artwork shows three upside-down magician’s cups, with solid
 bases uppermost. The displayed card illustrations have correct suit colours,
 rank indices and pip counts. The still life is illustrative artwork; replace
 it through Photos if you prefer your own picture. Use a wide landscape image
-with the subject toward the right for the desktop headline layout.
+with the subject toward the right for the framed hero image. The additional
+card-table artwork and generic product illustrations are included. Upload
+actual product photos in Collection to replace the default illustrations.
 
 Keep private/sleightly-tricky and all its contents. Existing accounts, text,
 products and photos remain in place; the new table is created automatically.
@@ -210,6 +213,7 @@ editing, permissions, password gates, CSRF, throttling, hidden/deleted pages,
 password revocation, protected MP4 streaming/ranges, and input validation.
 Browser validation also covers five viewport widths, collection/library
 search, password visibility, FAQs, keyboard menu access, reduced motion and
-native password submission with JavaScript disabled. See README.md.
+native password submission with JavaScript disabled, product-detail dialogs,
+keyboard focus, gallery controls and pointer-depth motion. See README.md.
 The actual Plesk host has not been accessed; verify its SSL, extensions,
 permissions, upload limits and your real videos after deployment.
