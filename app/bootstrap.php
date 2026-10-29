@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -109,7 +109,14 @@ function upload_image(): string {
  if(!move_uploaded_file($f['tmp_name'],$dir.'/'.$key))throw new RuntimeException('Could not save the image.');chmod($dir.'/'.$key,0600);return '/media.php?image='.$key;
 }
 function auth_page(string $title,string $intro,string $body,?string $error=null): void {
- echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>'.h($title).' | Sleightly Tricky</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/assets/site.css"></head><body><main class="login-shell"><a class="wordmark" href="/">SLEIGHTLY<br>TRICKY<span class="logo-diamond">♦</span></a><div class="login-panel"><p class="eyebrow">BEHIND THE SCENES</p><h1>'.h($title).'</h1><p>'.h($intro).'</p>';
- if($error)echo '<div class="editor-error" role="alert">'.h($error).'</div>';echo $body.'<a class="text-link" href="/">Back to the website</a></div></main></body></html>';
+ echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>'.h($title).' | Sleightly Tricky</title>';
+ site_assets();
+ echo '</head><body class="auth-page"><main class="login-shell">';brand();
+ echo '<div class="login-panel"><p class="eyebrow">THE STALLHOLDER’S DESK</p><h1>'.h($title).'</h1><p>'.h($intro).'</p>';
+ if($error)echo '<div class="editor-error" role="alert">'.h($error).'</div>';
+ echo $body.'<a class="text-link" href="/">Back to the website '.icon('arrow-up').'</a></div></main></body></html>';
 }
+
 require_once __DIR__.'/instructions.php';
+
+require_once __DIR__.'/view.php';

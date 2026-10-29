@@ -4,6 +4,24 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## The 1.2 design refresh
+
+A consistent visual design across the homepage, instruction library, password
+screen, video player, sign-in pages and admin. It keeps the original burgundy,
+warm cream and charcoal palette, with self-hosted Instrument Serif and Manrope,
+playing-card illustrations, a new hero, polished collections and a shared
+navigation/footer. It adds searchable tricks and instructions, subtle scroll
+reveals, card interactions, a mobile menu, password visibility control and FAQs.
+Motion respects the user's reduced-motion preference, and public navigation
+and password forms work without JavaScript. Existing editable content and
+private data remain compatible.
+
+![Homepage design](docs/redesign/homepage.png)
+
+[View the instruction library design](docs/redesign/instruction-library.png).
+Screenshots use sample instruction pages; the deployment ZIP includes no demo
+customer pages, passwords or private videos.
+
 ## Download and install
 
 Download [the Plesk deployment ZIP](releases/sleightly-tricky-website.zip).
@@ -51,6 +69,7 @@ Use that path in place of `php` in the commands above.
 ```sh
 PHP_BIN=/workspace/.runtime/bin/php python3 -m unittest discover -s tests -v
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/browser_smoke.py
+PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
 ```
 
 The HTTP suite has 10 passing tests covering original-site setup/migration,
@@ -61,6 +80,10 @@ The browser smoke test requires Python Playwright and `/usr/bin/chromium`.
 It exercises admin page creation, real video upload, saved-page reload,
 mobile password entry and MP4 playback, password replacement, hiding,
 deleting, responsive layout and JavaScript error checks.
+
+The design smoke test checks five viewport widths (320–1440px), search,
+password visibility, FAQs, keyboard/menu interactions, JavaScript-disabled
+navigation and native form submission, reduced motion and horizontal overflow.
 
 Real YouTube/Vimeo playback and production Plesk settings require validation
 with your hosting account and actual video links. The test video is a tiny
@@ -73,3 +96,10 @@ and the HTTP suite against the extracted website. Public files are packaged
 as `644` and directories as `755`, independently of local workspace modes.
 The package includes only deployable site files and the Plesk guide; it
 excludes Git metadata, development tools, tests, private data and credentials.
+
+## Font licences
+
+Instrument Serif and Manrope are self-hosted from the official Google Fonts
+repository under the SIL Open Font License. Their licence notices are included
+in [assets/fonts](assets/fonts). Site fonts and interface scripts are served locally. External video providers
+load only after a customer unlocks a lesson.

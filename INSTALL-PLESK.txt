@@ -1,9 +1,9 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.1.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.2.0
 ====================================
 
 WHAT IS INCLUDED
-Your original website and stallholder editor, plus a customer instruction-video
-library. Each trick has its own page and shared password. Manage titles, page
+A redesigned website, stallholder editor and customer instruction-video
+library, all in a consistent cream, charcoal and burgundy visual style. Each trick has its own page and shared password. Manage titles, page
 addresses, public summaries, private notes, videos, passwords and publication
 status from the Instruction videos tab in the admin panel.
 
@@ -49,6 +49,12 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
+Version 1.2 refreshes the homepage, instruction library, password and video
+pages, sign-in screens and admin styling. It adds collection/library search,
+mobile navigation improvements and optional animations that respect reduced
+motion preferences. Fonts are included locally; no external font account
+or build process is required.
+
 Keep private/sleightly-tricky and all its contents. Existing accounts, text,
 products and photos remain in place; the new table is created automatically.
 If app/config.php was customised, preserve its storage_dir and HTTPS settings.
@@ -191,6 +197,8 @@ VALIDATION
 Local PHP 8.4 integration tests cover setup, original-site data migration and
 editing, permissions, password gates, CSRF, throttling, hidden/deleted pages,
 password revocation, protected MP4 streaming/ranges, and input validation.
-Browser validation is documented in README.md in the source repository.
+Browser validation also covers five viewport widths, collection/library
+search, password visibility, FAQs, keyboard menu access, reduced motion and
+native password submission with JavaScript disabled. See README.md.
 The actual Plesk host has not been accessed; verify its SSL, extensions,
 permissions, upload limits and your real videos after deployment.
