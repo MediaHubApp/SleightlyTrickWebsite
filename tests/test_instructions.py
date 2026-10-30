@@ -2,12 +2,14 @@
 Run: PHP_BIN=/path/to/php python3 -m unittest discover -s tests -v
 """
 import http.cookiejar
+import http.client
 import json
 import os
 from pathlib import Path
 import re
 import socket
 import sqlite3
+import struct
 import subprocess
 import tempfile
 import time
@@ -112,6 +114,51 @@ class InstructionWorkflow(unittest.TestCase):
         body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: video/mp4\r\n\r\n').encode() + data + f'\r\n--{boundary}--\r\n'.encode()
         code, raw, _ = self.admin.request('/admin/api.php?action=upload-video', body, {'Content-Type': f'multipart/form-data; boundary={boundary}', 'X-CSRF-Token': csrf or self.csrf})
         return code, json.loads(raw)
+
+    def test_video_larger_than_previous_limit(self):
+        # Stream a valid MP4 plus a standards-compliant padding box, without
+        # constructing a 200 MB request in memory. Hosting permits 210M here.
+        payload_size = 200_000_032
+        fixture = (FIXTURES / 'sample.mp4').read_bytes()
+        padding_size = payload_size - len(fixture)
+        boundary = 'LargeVideoBoundary'
+        prefix = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="large.mp4"\r\nContent-Type: video/mp4\r\n\r\n').encode()
+        suffix = f'\r\n--{boundary}--\r\n'.encode()
+        def chunks():
+            yield prefix
+            yield fixture
+            yield struct.pack('>I4s', padding_size, b'free')
+            remaining = padding_size - 8
+            block = bytes(65536)
+            while remaining:
+                count = min(remaining, len(block))
+                yield block[:count]
+                remaining -= count
+            yield suffix
+        jar = next(h.cookiejar for h in self.admin.opener.handlers if isinstance(h, urllib.request.HTTPCookieProcessor))
+        cookie = '; '.join(f'{item.name}={item.value}' for item in jar)
+        connection = http.client.HTTPConnection('127.0.0.1', self.port, timeout=60)
+        try:
+            connection.request('POST', '/admin/api.php?action=upload-video', body=chunks(), headers={
+                'Content-Type': f'multipart/form-data; boundary={boundary}',
+                'Content-Length': str(len(prefix) + payload_size + len(suffix)),
+                'X-CSRF-Token': self.csrf, 'Cookie': cookie,
+            })
+            response = connection.getresponse()
+            result = json.loads(response.read())
+            self.assertEqual(response.status, 201, result)
+        finally:
+            connection.close()
+        source = result['source']
+        self.assertEqual((self.storage / 'videos' / source.removeprefix('upload:')).stat().st_size, payload_size)
+        self.update(video_source=source)
+        self.unlock()
+        code, _, headers = self.customer.request('/instruction-video.php?id=' + self.page['id'], method='HEAD')
+        self.assertEqual(code, 200)
+        self.assertEqual(int(headers['Content-Length']), payload_size)
+        code, body, _ = self.customer.request('/instruction-video.php?id=' + self.page['id'], headers={'Range':'bytes=200000000-200000031'})
+        self.assertEqual(code, 206)
+        self.assertEqual(body, bytes(32))
 
     def tearDown(self):
         code, result = self.admin.api('delete-instruction', {'id': self.page['id'], 'version': self.page['version']}, self.csrf)

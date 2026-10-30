@@ -11,12 +11,17 @@ function icon(string $name, string $class=''): string {
   'lock'=>'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>',
   'check'=>'<path d="m5 12 4 4L19 6"/>',
   'search'=>'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
+  'website'=>'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 13h8M8 16h5"/>',
+  'collection'=>'<rect x="3" y="5" width="12" height="16" rx="2"/><path d="M8 2h11a2 2 0 0 1 2 2v12M9 10l2 3-2 3-2-3Z"/>',
+  'image'=>'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 16 5-5 4 4 3-3 6 6"/>',
+  'users'=>'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/>',
+  'account'=>'<circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/>',
+  'logout'=>'<path d="M9 4H4v16h5M12 12h9m-4-4 4 4-4 4"/>',
  ];
  return '<svg class="icon '.h($class).'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.($paths[$name]??$paths['arrow']).'</svg>';
 }
 function site_assets(bool $admin=false): void { ?>
 <link rel="icon" href="/favicon.svg">
-<?php if($admin): ?><link rel="preload" href="/assets/fonts/LibreCaslonDisplay-Regular.ttf" as="font" type="font/ttf" crossorigin><?php endif; ?>
 <link rel="preload" href="/assets/fonts/Manrope-Variable.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="stylesheet" href="/assets/site.css?v=<?=h(APP_VERSION)?>">
 <?php if($admin): ?><link rel="stylesheet" href="/assets/admin.css?v=<?=h(APP_VERSION)?>"><?php endif; ?>
@@ -90,5 +95,5 @@ function product_visual(array $p,int $index=0,bool $deck=false): void {
 <?php endif; ?></div>
 <?php }
 function product_dialog(): void { ?>
-<dialog class="product-dialog" id="product-dialog" aria-labelledby="dialog-name"><button class="dialog-close" type="button" aria-label="Close product details"><?=icon('close')?></button><div class="dialog-art" id="dialog-art"></div><div class="dialog-copy"><div class="dialog-heading"><h2 id="dialog-name"></h2><span id="dialog-price"></span></div><p id="dialog-description"></p><p class="dialog-note">Visit the stall to see the product and check availability.</p><a class="button red" href="/#visit" id="dialog-visit">Find the stall <?=icon('arrow-up')?></a></div></dialog>
+<dialog class="product-dialog" id="product-dialog" aria-labelledby="dialog-name"><button class="dialog-close" type="button" aria-label="Close product details"><?=icon('close')?></button><div class="dialog-art" id="dialog-art"></div><div class="dialog-copy"><div class="dialog-heading"><h2 id="dialog-name"></h2><span id="dialog-price"></span></div><p id="dialog-description"></p><div class="dialog-browse" aria-label="Browse products"><span id="dialog-position" role="status" aria-live="polite"></span><div><button type="button" data-dialog-step="-1" aria-label="Previous product"><?=icon('arrow')?></button><button type="button" data-dialog-step="1" aria-label="Next product"><?=icon('arrow')?></button></div></div><p class="dialog-note">Visit the stall to see the product and check availability.</p><a class="button red" href="/#visit" id="dialog-visit">Find the stall <?=icon('arrow-up')?></a></div></dialog>
 <?php }

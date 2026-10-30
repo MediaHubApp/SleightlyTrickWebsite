@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -111,10 +111,11 @@ function upload_image(): string {
 function auth_page(string $title,string $intro,string $body,?string $error=null): void {
  echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>'.h($title).' | Sleightly Tricky</title>';
  site_assets(true);
- echo '</head><body class="auth-page"><main class="login-shell">';brand();
- echo '<div class="login-panel"><h1>'.h($title).'</h1><p>'.h($intro).'</p>';
+ echo '</head><body class="auth-page"><a class="skip-link" href="#login">Skip to sign in</a><main class="login-shell"><aside class="login-art">';brand();
+ echo '<div class="login-art-copy"><h2>Behind<br>the magic.</h2><p>Manage your website, collection and instruction videos.</p></div><div class="login-card-art" aria-hidden="true">';card_study();
+ echo '</div><a class="login-back" href="/">Back to the website '.icon('arrow-up').'</a></aside><div class="login-content"><div class="login-panel" id="login"><span class="login-lock" aria-hidden="true">'.icon('lock').'</span><h1>'.h($title).'</h1><p>'.h($intro).'</p>';
  if($error)echo '<div class="editor-error" role="alert">'.h($error).'</div>';
- echo $body.'<a class="text-link" href="/">Back to the website '.icon('arrow-up').'</a></div></main></body></html>';
+ echo $body.'<a class="text-link" href="/">Back to the website '.icon('arrow-up').'</a></div><p class="login-footnote">Sleightly Tricky · Stallholder portal</p></div></main></body></html>';
 }
 
 require_once __DIR__.'/instructions.php';

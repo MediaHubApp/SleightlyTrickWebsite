@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.4.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.5.0
 ====================================
 
 WHAT IS INCLUDED
@@ -15,11 +15,15 @@ REQUIREMENTS
 - HTTPS with a valid SSL certificate and a permanent HTTP-to-HTTPS redirect.
 - PHP must be able to create a private directory alongside httpdocs.
 - For images: upload_max_filesize=8M, post_max_size=10M or greater.
-- For private videos up to 200 MB: upload_max_filesize=200M,
-  post_max_size=210M, memory_limit=128M or higher. Increase PHP/web-server
-  request timeouts as needed for your upload speed. Plesk/nginx/Apache request
-  body limits must also allow the file. The application limit is 200,000,000
-  bytes; image uploads remain limited to 5,000,000 bytes.
+- Private videos have NO application file-size cap. In Plesk PHP Settings,
+  set upload_max_filesize large enough for your biggest MP4, and post_max_size
+  larger still (including upload metadata), or 0 for no PHP POST-size limit.
+  Example: upload_max_filesize=2G and post_max_size=0. Do not set
+  upload_max_filesize=0: that does not enable unlimited file uploads.
+  Increase PHP/web-server request timeouts as needed for your upload speed.
+  Plesk/nginx/Apache request-body limits, temporary space and available private
+  storage must also allow the file. Keep memory_limit=128M or higher.
+  Image uploads remain limited to 5,000,000 bytes.
 - The website is designed for the root of a domain, not a subdirectory.
 
 1. UPLOAD THE READY-TO-INSTALL ZIP
@@ -49,11 +53,18 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
-Version 1.4 uses an immersive modern layout with layered hero artwork,
+Version 1.5 refines the immersive modern layout with layered hero artwork,
 visual product galleries, product-detail dialogs, a swipeable deck collection
 and matching instruction pages. Motion respects reduced-motion settings;
 public content and password forms also work without JavaScript. The gallery
 has button, keyboard and touch controls and never advances automatically.
+Product details now support previous/next browsing and arrow keys. The admin
+portal shares the same typography, burgundy sidebar, cream panels and precise
+card artwork, with live opening previews and a searchable product list. The
+sticky Publish bar appears only for website text, collection and photos.
+Instruction videos and account changes retain their separate save actions.
+There is no longer a 200 MB application cap for uploaded videos. Hosting
+settings are external to the ZIP: raise the limits above for larger videos.
 
 Unchanged stock headings and descriptions are refreshed. Custom text,
 product names, prices, visibility and uploaded photos are preserved. The
@@ -150,9 +161,12 @@ for high traffic or very large files.
 
 5. EXISTING WEBSITE EDITOR
 - Website text: edit headings, paragraphs, trading days and public email.
-- Collection: change products, prices, descriptions and visibility.
+  The opening preview updates as you type; visitors see changes only after
+  you publish. The preview is a compact approximation of the responsive site.
+- Collection: search products and change prices, descriptions and visibility.
 - Photos: upload your main photograph, banner and optional product images.
-- Publish changes saves those website changes.
+- Publish changes saves those website changes. Ctrl/Cmd+S also saves the
+  active website editor, or the current instruction page when it is open.
 - Editor access: owner-only editor-account creation/removal; no emails sent.
 - My account: change your own admin password. It revokes other admin sessions.
 
@@ -214,6 +228,9 @@ password revocation, protected MP4 streaming/ranges, and input validation.
 Browser validation also covers five viewport widths, collection/library
 search, password visibility, FAQs, keyboard menu access, reduced motion and
 native password submission with JavaScript disabled, product-detail dialogs,
-keyboard focus, gallery controls and pointer-depth motion. See README.md.
+keyboard focus, gallery controls and pointer-depth motion. Portal checks
+cover live drafts, publishing, keyboard navigation, responsive tabs, product
+search and mobile sign-out. An actual upload over the previous 200 MB cap
+and its protected byte ranges are tested. See README.md.
 The actual Plesk host has not been accessed; verify its SSL, extensions,
 permissions, upload limits and your real videos after deployment.

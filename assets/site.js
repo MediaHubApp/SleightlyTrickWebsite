@@ -84,18 +84,35 @@
   // Native dialogs retain keyboard focus and expose only public catalogue data.
   const dialog = document.getElementById('product-dialog');
   let lastProductButton = null;
+  let productGroup = [], productIndex = 0;
   if (dialog && typeof dialog.showModal === 'function') {
+    let browseAnimation = null;
+    function showProduct(article) {
+      const art = article.querySelector('.product-visual').cloneNode(true);
+      art.querySelectorAll('.price, .deck-price').forEach(el => el.remove());
+      art.querySelectorAll('[loading]').forEach(el => el.loading = 'eager');
+      document.getElementById('dialog-art').replaceChildren(art);
+      document.getElementById('dialog-name').textContent = article.querySelector('h3').textContent;
+      document.getElementById('dialog-price').textContent = article.querySelector('.price, .deck-price').textContent;
+      document.getElementById('dialog-description').textContent = article.querySelector('.product-description').textContent;
+      document.getElementById('dialog-position').textContent = (productIndex + 1) + ' of ' + productGroup.length;
+      dialog.querySelector('.dialog-browse').hidden = productGroup.length < 2;
+    }
+    function browseProduct(step) {
+      productIndex = (productIndex + step + productGroup.length) % productGroup.length;
+      showProduct(productGroup[productIndex]);
+      browseAnimation?.cancel();
+      if (!reduced.matches) browseAnimation = document.getElementById('dialog-art').animate([{opacity: .4, transform: 'translateX(' + (step * 12) + 'px)'}, {opacity: 1, transform: 'translateX(0)'}], {duration: 280, easing: 'ease-out'});
+    }
+    reduced.addEventListener('change', e => {if (e.matches) browseAnimation?.cancel();});
+    dialog.querySelectorAll('[data-dialog-step]').forEach(button => button.addEventListener('click', () => browseProduct(Number(button.dataset.dialogStep))));
     document.querySelectorAll('[data-product-open]').forEach(button => {
       button.addEventListener('click', () => {
         const article = button.closest('.product, .deck');
         if (!article) return;
-        const art = article.querySelector('.product-visual').cloneNode(true);
-        art.querySelectorAll('.price, .deck-price').forEach(el => el.remove());
-        art.querySelectorAll('[loading]').forEach(el => el.loading = 'eager');
-        document.getElementById('dialog-art').replaceChildren(art);
-        document.getElementById('dialog-name').textContent = article.querySelector('h3').textContent;
-        document.getElementById('dialog-price').textContent = article.querySelector('.price, .deck-price').textContent;
-        document.getElementById('dialog-description').textContent = article.querySelector('.product-description').textContent;
+        productGroup = [...article.parentElement.querySelectorAll('.product, .deck')].filter(item => !item.hidden);
+        productIndex = productGroup.indexOf(article);
+        showProduct(article);
         lastProductButton = button;
         dialog.showModal();
         document.body.classList.add('dialog-open');
@@ -103,6 +120,7 @@
     });
     dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
     dialog.addEventListener('keydown', e => {
+      if (['ArrowLeft', 'ArrowRight'].includes(e.key) && productGroup.length > 1) {e.preventDefault();browseProduct(e.key === 'ArrowLeft' ? -1 : 1);return;}
       if (e.key !== 'Tab') return;
       const controls = [...dialog.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]')].filter(el => el.getClientRects().length > 0);
       const first = controls[0], last = controls[controls.length - 1];
@@ -115,6 +133,7 @@
       if (e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom) dialog.close();
     });
     dialog.addEventListener('close', () => {
+      browseAnimation?.cancel();
       document.body.classList.remove('dialog-open');
       lastProductButton?.focus({preventScroll: true});
     });
@@ -122,6 +141,21 @@
   } else {
     document.querySelectorAll('[data-product-open]').forEach(button => button.hidden = true);
     document.body.classList.remove('is-enhanced');
+  }
+
+  // Keep a quiet navigation cue as the visitor moves between the home sections.
+  if (document.body.classList.contains('home-page') && 'IntersectionObserver' in window) {
+    const sectionLinks = [...document.querySelectorAll('.main-nav a[href^="/#"]')];
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        sectionLinks.forEach(link => {
+          if (link.hash === '#' + entry.target.id) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      });
+    }, {rootMargin: '-15% 0px -65% 0px', threshold: 0});
+    document.querySelectorAll('#magic, #cards, #visit, .hero, #story, .instruction-callout').forEach(section => sectionObserver.observe(section));
   }
 
   document.querySelectorAll('[data-rail]').forEach(rail => {

@@ -76,7 +76,9 @@ function instruction_unlocked(array $page): bool {
 }
 function upload_instruction_video(): string {
  $f=$_FILES['file']??null;
- if(!$f||$f['error']!==UPLOAD_ERR_OK||$f['size']<12||$f['size']>200000000||!is_uploaded_file($f['tmp_name']))throw new DomainException('Choose an MP4 under 200 MB. Your hosting upload limits must also allow its size.');
+ if($f&&in_array($f['error'],[UPLOAD_ERR_INI_SIZE,UPLOAD_ERR_FORM_SIZE],true))throw new DomainException('Your hosting rejected the video size. Increase upload_max_filesize and post_max_size in Plesk, and check the web-server upload limit.',413);
+ if($f&&$f['error']===UPLOAD_ERR_PARTIAL)throw new DomainException('The video upload was interrupted. Please try again.');
+ if(!$f||$f['error']!==UPLOAD_ERR_OK||$f['size']<12||!is_uploaded_file($f['tmp_name']))throw new DomainException('Choose a valid MP4 video. If the file did not arrive, check your hosting upload limits and available disk space.');
  $head=file_get_contents($f['tmp_name'],false,null,0,32);$mime=(new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);
  if(strtolower(pathinfo($f['name'],PATHINFO_EXTENSION))!=='mp4'||substr($head,4,4)!=='ftyp'||!in_array($mime,['video/mp4','application/mp4'],true))throw new DomainException('Please choose a valid MP4 video.');
  $dir=storage().'/videos';if(!is_dir($dir)&&!mkdir($dir,0700,true))throw new RuntimeException('Could not create video directory.');

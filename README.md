@@ -4,13 +4,16 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
-## The 1.4 immersive redesign
+## The 1.5 storefront and portal
 
 An immersive, modern interface in burgundy, cream and charcoal: layered hero
 artwork, a floating navigation frame, visual collection routes, dimensional
 product scenes and a swipeable deck gallery. Product details open in native
 keyboard-accessible dialogs with complete descriptions and prices. The
 instruction library, password gate and video player use the same visual system.
+Refined surfaces, layered paper and quieter navigation cues carry through the site.
+Product dialogs now let visitors browse the current collection with previous/next
+buttons or arrow keys, without returning to the grid.
 
 Motion includes staggered scroll reveals, paper/card hover transitions,
 subtle pointer depth on the hero, a reading-progress line and dialog entrance
@@ -25,7 +28,20 @@ JavaScript. There are no decorative section labels or invented purchase links.
 [Product details](docs/redesign/product-details.png) ·
 [Instruction library](docs/redesign/instruction-library.png).
 
-![Product detail view](docs/redesign/product-details.png)
+![Stallholder portal](docs/redesign/admin-website.png)
+
+The admin portal now uses the same Manrope typography, rich burgundy navigation,
+cream surfaces and card artwork. It includes a live opening-section preview,
+searchable product picker, responsive navigation, grouped lesson settings and a
+sticky publication bar. Website publication controls appear only for text,
+collection and photos; instruction pages keep their own Save action. Tab navigation
+works with arrow keys and Home/End, and Ctrl/Cmd+S saves the active content editor.
+
+[Admin editor](docs/redesign/admin-website.png) ·
+[Admin collection](docs/redesign/admin-collection.png) ·
+[Instruction editor](docs/redesign/admin-instructions.png) ·
+[Admin mobile](docs/redesign/admin-mobile.png) ·
+[Stallholder sign-in](docs/redesign/admin-login.png).
 
 The cup artwork retains the three correctly inverted cups. Faces are drawn
 as exact SVGs with black spades/clubs, red hearts/diamonds, matching opposing
@@ -55,6 +71,9 @@ then add your tricks through **Admin → Instruction videos**.
 Each page supports a shared trick password, public summary, protected notes,
 one YouTube/Vimeo/direct MP4 video or private MP4 upload, a customer link,
 publish/hide, and delete. Instruction changes use their own Save button.
+**Private video uploads have no application file-size cap.** PHP, web-server,
+timeout and storage limits still apply; configure those in Plesk for your files.
+Image uploads retain their 5 MB limit.
 External providers still control access to their video URLs; private uploads
 are checked by the website on every request. Shared passwords do not provide
 DRM or prevent buyers sharing access.
@@ -69,10 +88,12 @@ On a PHP-equipped machine, from the repository root:
 
 ```sh
 ST_LOCAL_HTTP=1 ST_STORAGE_DIR=/tmp/sleightly-dev-data \
-  php -d upload_max_filesize=200M -d post_max_size=210M \
+  php -d upload_max_filesize=2G -d post_max_size=0 \
   -S 127.0.0.1:8081 -t . tools/dev-router.php
 ```
 
+The example allows 2 GiB per file locally and no total POST size cap; choose
+limits appropriate for your machine. The website itself imposes no video size cap.
 The HTTP override is accepted only by PHP's built-in development server.
 Production always requires HTTPS with the supplied configuration. Never run
 PHP's development server as your production web server. Local private data
@@ -89,13 +110,15 @@ Use that path in place of `php` in the commands above.
 PHP_BIN=/workspace/.runtime/bin/php python3 -m unittest discover -s tests -v
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/browser_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
+PHP_BIN=/workspace/.runtime/bin/php python3 tests/admin_design_smoke.py
 ```
 
-The automated suite has 13 passing tests covering original-site setup/migration,
+The automated suite has 14 passing tests covering original-site setup/migration,
 editing, customer gates, CSRF, rate limiting, expiry, per-page access,
 password replacement, hiding/deleting, private uploads and byte ranges,
 malformed inputs, editor permissions and revocation, exact card pip counts/colours,
-card indices, and compatible copy upgrades. It uses temporary data.
+card indices, compatible copy upgrades and a real upload above the former
+200 MB limit with protected streaming beyond that boundary. It uses temporary data.
 The browser smoke test requires Python Playwright and `/usr/bin/chromium`.
 It exercises admin page creation, real video upload, saved-page reload,
 mobile password entry and MP4 playback, password replacement, hiding,
@@ -107,6 +130,10 @@ navigation and native form submission, reduced motion and horizontal overflow.
 It also checks product dialogs, focus wrapping/return, gallery button and keyboard
 controls, mobile product details, pointer-depth animation and cancellation when
 the motion preference changes.
+
+The portal smoke test checks live local previews versus published content,
+keyboard publication, product search, navigation orientation, all six admin tabs
+at five widths, mobile sign-out and reduced motion.
 
 Real YouTube/Vimeo playback and production Plesk settings require validation
 with your hosting account and actual video links. The test video is a tiny
