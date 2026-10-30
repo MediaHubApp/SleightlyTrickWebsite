@@ -4,6 +4,22 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## The 1.9 instruction access update
+
+Shared trick passwords accept any combination of uppercase and lowercase letters.
+A signed, HttpOnly cookie remembers each trick for a fixed 15 minutes after unlock,
+including refreshes and return visits. Refreshing does not extend the timer. The
+manual Lock this page button is removed. After expiry, the next page or private
+video request needs the password again. Stallholder login passwords remain exact.
+
+When upgrading, keep the existing private folder. In **Admin → Instruction
+videos**, re-enter each existing printed password once and save to enable all
+letter cases immediately. Old one-way hashes cannot be converted without the
+password. Original-case successful unlocks also upgrade old passwords automatically;
+passwords previously stored entirely lowercase can upgrade from any letter case.
+The editor identifies pages still needing this one-time update. No plaintext
+passwords are stored. Changing a password revokes its existing access cookies.
+
 ## The 1.8 linked instruction pages
 
 In **Admin → Instruction videos**, select a **Linked collection product** and

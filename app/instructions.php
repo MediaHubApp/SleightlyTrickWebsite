@@ -7,6 +7,7 @@ function instruction_by(string $column, string $value): ?array {
  $q=db()->prepare("SELECT * FROM instructions WHERE $column=?");$q->execute([$value]);return $q->fetch()?:null;
 }
 function instruction_admin(array $row): array {
+ $row['password_case_insensitive']=str_starts_with($row['password_hash'],'ci:');
  $row['has_password']=$row['password_hash']!=='';unset($row['password_hash']);
  $row['published']=(bool)$row['published'];$row['version']=(int)$row['version'];return $row;
 }
@@ -65,7 +66,7 @@ function save_instruction(array $data): array {
  $password=$data['password']??'';
  if(!is_string($password)||strlen($password)>72||($password!==''&&trim($password)===''))throw new DomainException('Use a shared password between 1 and 72 bytes.');
  if(!$current&&$password==='')throw new DomainException('Set the shared password supplied with this trick.');
- $hash=$password!==''?password_hash($password,PASSWORD_DEFAULT):$current['password_hash'];
+ $hash=$password!==''?instruction_password_hash($password):$current['password_hash'];
  $version=$data['version']??0;
  if(!is_int($version)||($current&&$version!==(int)$current['version']))throw new DomainException('Someone else changed this page. Reload it before saving.',409);
  try{
@@ -80,9 +81,38 @@ function save_instruction(array $data): array {
  }catch(PDOException $e){if((int)$e->getCode()===23000)throw new DomainException('That page address is already in use. Choose another.');throw $e;}
  return instruction_admin(instruction_by('id',$id));
 }
+function instruction_password_hash(string $password): string {
+ // Only shared trick passwords are folded; stallholder passwords remain exact.
+ return 'ci:'.password_hash(strtolower($password),PASSWORD_DEFAULT);
+}
+function instruction_password_matches(array &$page,string $password): bool {
+ $hash=$page['password_hash'];
+ if(str_starts_with($hash,'ci:'))return password_verify(strtolower($password),substr($hash,3));
+ // Old one-way hashes cannot be folded. Preserve their original password and
+ // upgrade on a successful unlock; admins can also re-save it to upgrade now.
+ if(!password_verify(strtolower($password),$hash)&&!password_verify($password,$hash))return false;
+ $newHash=instruction_password_hash($password);
+ $q=db()->prepare('UPDATE instructions SET password_hash=?,version=version+1,updated_at=? WHERE id=? AND password_hash=?');
+ $q->execute([$newHash,gmdate('c'),$page['id'],$hash]);
+ if($q->rowCount()!==1)return false;
+ $page['password_hash']=$newHash;
+ return true;
+}
+const INSTRUCTION_ACCESS_SECONDS=900;
+function instruction_cookie_name(array $page): string { return 'ST_INSTRUCTION_'.$page['id']; }
+function instruction_access_signature(array $page,string $expires): string {
+ return hash_hmac('sha256','instruction-access:'.$page['id'].':'.$expires.':'.$page['password_hash'],setup_key());
+}
+function instruction_remember(array $page): void {
+ $expires=time()+INSTRUCTION_ACCESS_SECONDS;
+ $value=$expires.'.'.instruction_access_signature($page,(string)$expires);
+ setcookie(instruction_cookie_name($page),$value,['expires'=>$expires,'path'=>'/','secure'=>https(),'httponly'=>true,'samesite'=>'Lax']);
+}
 function instruction_unlocked(array $page): bool {
- $grant=$_SESSION['instruction_access'][$page['id']]??null;
- return (bool)$page['published']&&is_array($grant)&&($grant['expires']??0)>time()&&hash_equals($page['password_hash'],$grant['signature']??'');
+ $grant=$_COOKIE[instruction_cookie_name($page)]??'';
+ if(!$page['published']||!is_string($grant)||!preg_match('/^([0-9]{10})\.([a-f0-9]{64})$/D',$grant,$parts))return false;
+ // Check expiry on the server too, even if a client keeps an expired cookie.
+ return (int)$parts[1]>time()&&hash_equals(instruction_access_signature($page,$parts[1]),$parts[2]);
 }
 function upload_instruction_video(): string {
  $f=$_FILES['file']??null;

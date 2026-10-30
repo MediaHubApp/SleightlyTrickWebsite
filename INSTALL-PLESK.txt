@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.8.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.9.0
 ====================================
 
 WHAT IS INCLUDED
@@ -53,6 +53,17 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
+Version 1.9 makes shared trick passwords case-insensitive, removes the manual
+Lock this page button, and remembers access with a cookie for a fixed 15 minutes.
+Refreshing or returning within that time does not require the password or extend
+the timer. After expiry, the next page or private video request needs it again.
+Keep the existing private folder and custom app/config.php. In Admin > Instruction
+videos, re-enter each existing printed password once and Save instruction page
+so all letter cases work immediately. Old one-way hashes cannot be converted
+without the password. Successful original-case unlocks also upgrade automatically;
+old all-lowercase passwords can upgrade from any letter case. The editor flags
+pages still needing this update. Stallholder login passwords remain case-sensitive.
+
 Version 1.8 adds optional product links to instruction pages. Keep your current
 private folder and custom app/config.php. The existing database gains the link
 field automatically; accounts, passwords, videos and saved pages stay intact.
@@ -141,8 +152,8 @@ Sign in at https://YOUR-DOMAIN/admin/ and choose Instruction videos.
   A new link/upload replaces the selected video. For Vimeo unlisted videos,
   include the complete privacy link. Provider embedding must be enabled.
 - Add optional PRIVATE notes. These appear only after unlocking.
-- Set the shared password printed with that trick. Matching is exact and
-  case-sensitive, including spaces. Keep your own secure record: passwords
+- Set the shared password printed with that trick. Uppercase and lowercase letters
+  both work; spaces and punctuation must still match. Keep your own secure record: passwords
   are hashed and cannot be viewed later. Re-enter the password only to change
   it; leaving the replacement field blank keeps the existing password.
 - Enable Publish this instruction page, then click Save instruction page.
@@ -156,9 +167,9 @@ password or deleting takes effect immediately. The main Publish changes
 button still applies only to website text, products and photos.
 
 Customers select their trick at /instructions.php and enter its password.
-No customer account is needed. Access lasts two hours in that browser; Lock
-this page ends it sooner. Each trick must be unlocked separately. Replacing
-the shared password revokes existing unlocked sessions. Hiding or deleting a
+No customer account is needed. A cookie remembers access for 15 minutes in that browser,
+including refreshes and return visits. Refreshing does not extend the timer. Each trick must be unlocked separately. Replacing
+the shared password revokes existing access cookies. Hiding or deleting a
 page blocks its page and uploaded video, even for previously unlocked users.
 The owner and existing editor accounts can manage instruction pages; only
 the owner can manage editor accounts.
@@ -238,8 +249,10 @@ TROUBLESHOOTING
   private directory permissions. Use MP4/H.264 with AAC for wide compatibility.
 - Hosted video will not play: check the full link, embedding permissions,
   account restrictions and any domain restriction at the video provider.
-- Password rejected: check the exact printed password and capital letters.
-  After repeated failures, wait 15 minutes. An admin can set a replacement.
+- Trick password rejected: check the printed word, spaces and punctuation.
+  Letter case does not matter for passwords saved with version 1.9. For older
+  pages, re-enter and save the printed password once in Admin > Instruction
+  videos. After repeated failures, wait 15 minutes. An admin can set a replacement.
 - HTTPS required: use https:// with a valid certificate; do not disable it.
 - Server error: inspect Plesk Logs for permission, open_basedir or PHP errors.
 - Admin password forgotten: owner can recreate editor accounts; an owner

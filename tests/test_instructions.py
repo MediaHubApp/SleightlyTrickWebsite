@@ -3,6 +3,8 @@ Run: PHP_BIN=/path/to/php python3 -m unittest discover -s tests -v
 """
 import http.cookiejar
 import http.client
+import hashlib
+import hmac
 import json
 import os
 from pathlib import Path
@@ -38,7 +40,8 @@ def png_fixture(width=2, height=2, padding=0):
 class Client:
     def __init__(self, base):
         self.base = base
-        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+        self.cookies = http.cookiejar.CookieJar()
+        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.cookies))
 
     def request(self, path, data=None, headers=None, method=None):
         request = urllib.request.Request(self.base + path, data=data, headers=headers or {}, method=method)
@@ -306,7 +309,7 @@ class InstructionWorkflow(unittest.TestCase):
         self.update(product_id='')
         self.assertNotIn(b'lesson-product-art', self.customer.request(self.path)[1])
 
-    def test_correct_wrong_password_lock_and_csrf(self):
+    def test_correct_wrong_password_and_csrf(self):
         code, body, _ = self.unlock('wrong')
         self.assertEqual(code, 403)
         self.assertNotIn(b'dQw4w9WgXcQ', body)
@@ -318,8 +321,88 @@ class InstructionWorkflow(unittest.TestCase):
         self.assertIn(b'&lt;safe&gt;', body)
         self.assertIn(b'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', body)
         self.assertIn('https://www.youtube-nocookie.com', headers['Content-Security-Policy'])
-        _, body, _ = self.customer.form(self.path, {'_csrf': self.customer.token(self.path), 'action': 'lock'})
-        self.assertNotIn(b'PRIVATE SECRET NOTES', body)
+        self.assertNotIn(b'Lock this page', body)
+        self.assertNotIn(b'instruction-lock', body)
+        self.assertIn(b'15 minutes', body)
+
+    def test_password_accepts_any_letter_case(self):
+        for password in ['printed-secret', 'PRINTED-SECRET', 'pRiNtEd-sEcReT', 'Printed-Secret']:
+            with self.subTest(password=password):
+                code, body, _ = self.unlock(password, customer=Client(self.base))
+                self.assertEqual(code, 200)
+                self.assertIn(b'PRIVATE SECRET NOTES', body)
+        for password in ['printedsecret', 'printed-secrets', ' printed-secret']:
+            with self.subTest(password=password):
+                self.assertEqual(self.unlock(password, customer=Client(self.base))[0], 403)
+
+    def access_cookie(self):
+        return next(cookie for cookie in self.customer.cookies if cookie.name == 'ST_INSTRUCTION_' + self.page['id'])
+
+    def expire_access(self):
+        # Sign a past timestamp to check server expiry independently of the browser.
+        with sqlite3.connect(self.storage / 'site.sqlite') as db:
+            password_hash = db.execute('SELECT password_hash FROM instructions WHERE id=?', (self.page['id'],)).fetchone()[0]
+        expires = str(int(time.time()) - 1)
+        payload = 'instruction-access:' + self.page['id'] + ':' + expires + ':' + password_hash
+        signature = hmac.new((self.storage / 'setup-key.txt').read_text().strip().encode(), payload.encode(), hashlib.sha256).hexdigest()
+        self.access_cookie().value = expires + '.' + signature
+
+    def test_cookie_remembers_refresh_and_return_without_extending_expiry(self):
+        started = int(time.time())
+        self.unlock('PRINTED-SECRET')
+        cookie = self.access_cookie()
+        self.assertIn(cookie.expires, range(started + 900, int(time.time()) + 901))
+        self.assertEqual(int(cookie.value.split('.')[0]), cookie.expires)
+        self.assertTrue(cookie.has_nonstandard_attr('HttpOnly'))
+        self.assertEqual(cookie.get_nonstandard_attr('SameSite'), 'Lax')
+        self.assertEqual(cookie.path, '/')
+        self.assertNotIn('printed-secret', cookie.value.lower())
+        original = cookie.value
+        for _ in range(2):
+            code, body, headers = self.customer.request(self.path)
+            self.assertEqual(code, 200)
+            self.assertIn(b'PRIVATE SECRET NOTES', body)
+            self.assertNotIn(cookie.name, headers.get('Set-Cookie', ''))
+            self.assertEqual(self.access_cookie().value, original)
+        # Re-open with only the persistent access cookie: the session is irrelevant.
+        returning = Client(self.base)
+        returning.cookies.set_cookie(cookie)
+        self.assertIn(b'PRIVATE SECRET NOTES', returning.request(self.path)[1])
+        self.assertNotIn(b'PRIVATE SECRET NOTES', Client(self.base).request(self.path)[1])
+
+    def test_cookie_tampering_and_trick_isolation(self):
+        self.unlock()
+        cookie = self.access_cookie()
+        original = cookie.value
+        expires, signature = original.split('.')
+        for value in [str(int(expires) + 900) + '.' + signature, expires + '.' + '0' * 64, 'invalid']:
+            cookie.value = value
+            self.assertNotIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
+        cookie.value = original
+        other = self.save(title='Other trick', slug=self.slug+'-other', password='Other-Secret', video_source='https://example.test/other.mp4', notes='OTHER PRIVATE NOTES', published=True)
+        try:
+            code, body, _ = self.customer.request('/instructions.php?trick=' + other['slug'])
+            self.assertEqual(code, 200)
+            self.assertNotIn(b'OTHER PRIVATE NOTES', body)
+            # Copying a valid token to a different trick's cookie also fails.
+            code, body, _ = Client(self.base).request('/instructions.php?trick=' + other['slug'], headers={'Cookie': 'ST_INSTRUCTION_' + other['id'] + '=' + original})
+            self.assertNotIn(b'OTHER PRIVATE NOTES', body)
+        finally:
+            self.assertEqual(self.admin.api('delete-instruction', {'id': other['id'], 'version': other['version']}, self.csrf)[0], 200)
+
+    def test_legacy_passwords_upgrade_without_resetting_pages(self):
+        for password in ['Old-MiXeD-Secret', 'old-lower-secret']:
+            legacy_hash = subprocess.check_output([os.environ.get('PHP_BIN', 'php'), '-r', 'echo password_hash($argv[1], PASSWORD_DEFAULT);', password], text=True)
+            with sqlite3.connect(self.storage / 'site.sqlite') as db:
+                db.execute('UPDATE instructions SET password_hash=? WHERE id=?', (legacy_hash, self.page['id']))
+            _, listed = self.admin.api('instructions')
+            self.assertFalse(next(p for p in listed['instructions'] if p['id'] == self.page['id'])['password_case_insensitive'])
+            self.customer = Client(self.base)
+            self.assertIn(b'PRIVATE SECRET NOTES', self.unlock(password.upper() if password.islower() else password)[1])
+            _, listed = self.admin.api('instructions')
+            self.page = next(p for p in listed['instructions'] if p['id'] == self.page['id'])
+            self.assertTrue(self.page['password_case_insensitive'])
+            self.assertIn(b'PRIVATE SECRET NOTES', self.unlock(password.swapcase(), customer=Client(self.base))[1])
 
     def test_password_replacement_and_expiry(self):
         self.unlock()
@@ -327,13 +410,9 @@ class InstructionWorkflow(unittest.TestCase):
         self.assertNotIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
         self.assertEqual(self.unlock()[0], 403)
         self.assertIn(b'PRIVATE SECRET NOTES', self.unlock('New-Printed-Secret')[1])
-        # Expire this test session on disk, as PHP would after its two-hour grant.
-        for path in (self.storage / 'sessions').glob('sess_*'):
-            text = path.read_text()
-            if self.page['id'] in text:
-                text = re.sub(r'("expires";i:)\d+', r'\g<1>1', text)
-                path.write_text(text)
+        self.expire_access()
         self.assertNotIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
+        self.assertIn(b'PRIVATE SECRET NOTES', self.unlock('nEw-pRiNtEd-sEcReT')[1])
 
     def test_hidden_and_deleted_pages(self):
         self.unlock()
@@ -366,6 +445,11 @@ class InstructionWorkflow(unittest.TestCase):
         self.assertEqual(self.customer.request(path, headers={'Range': 'bytes=99999999-'})[0], 416)
         self.assertEqual(self.customer.request(path, headers={'Range': 'bytes=0-1,4-8'})[0], 416)
         self.assertEqual(self.customer.request(path, method='HEAD')[1], b'')
+        self.expire_access()
+        self.assertEqual(self.customer.request(path)[0], 404)
+        self.assertEqual(self.customer.request(path, headers={'Range': 'bytes=10-39'})[0], 404)
+        self.assertNotIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
+        self.unlock('pRiNtEd-sEcReT')
         code, _, headers = self.customer.request(path, data=b'', method='POST')
         self.assertEqual(code, 405)
         self.update(password='Changed')

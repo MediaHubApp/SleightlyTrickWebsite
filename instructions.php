@@ -10,17 +10,13 @@ try {
   if(!$page||!$page['published'])throw new DomainException('This instruction page is unavailable.',404);
   if($_SERVER['REQUEST_METHOD']==='POST'){
    csrf_check();
-   if(($_POST['action']??'')==='lock'){
-    unset($_SESSION['instruction_access'][$page['id']]);
-   }else{
-    $ip=$_SERVER['REMOTE_ADDR']??'unknown';$scope='instruction:'.$page['id'].':'.$ip;$all='instruction-ip:'.$ip;
-    rate_check($scope,8);rate_check($all,20);$password=$_POST['password']??'';
-    if(!is_string($password)||strlen($password)>72||!password_verify($password,$page['password_hash'])){
-     failed_attempt($scope);failed_attempt($all);throw new DomainException('That password does not match. Check the password supplied with your trick, including capital letters.',403);
-    }
-    session_regenerate_id(true);
-    $_SESSION['instruction_access'][$page['id']]=['expires'=>time()+7200,'signature'=>$page['password_hash']];
+   $ip=$_SERVER['REMOTE_ADDR']??'unknown';$scope='instruction:'.$page['id'].':'.$ip;$all='instruction-ip:'.$ip;
+   rate_check($scope,8);rate_check($all,20);$password=$_POST['password']??'';
+   if(!is_string($password)||strlen($password)>72||!instruction_password_matches($page,$password)){
+    failed_attempt($scope);failed_attempt($all);throw new DomainException('That password does not match. Check the password supplied with your trick.',403);
    }
+   session_regenerate_id(true);
+   instruction_remember($page);
    header('Location: /instructions.php?trick='.rawurlencode($page['slug']),true,303);exit;
   }
   $unlocked=instruction_unlocked($page);
@@ -46,14 +42,14 @@ $title=$page?$page['title'].' instructions':'Instruction videos';
 <div class="lesson-access"><div class="lesson-art <?=$linked?'lesson-product-art':''?>" aria-hidden="true"><?php if($linked): product_visual($linked['product'],$linked['index']); else: card_study(); endif; ?></div>
 <section class="instruction-gate" aria-labelledby="unlock-title"><h2 id="unlock-title">Watch the instructions.</h2><p>Enter the password supplied with your trick.</p>
 <?php if($error): ?><p class="editor-error" role="alert" tabindex="-1"><?=h($error)?></p><?php endif; ?>
-<form method="post" class="auth-form"><input type="hidden" name="_csrf" value="<?=h(csrf())?>"><label class="field" for="trick-password"><span>Trick password</span></label><div class="password-input"><input id="trick-password" type="password" name="password" required maxlength="72" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="password-help"><button type="button" class="password-toggle" data-password-toggle="trick-password" aria-label="Show trick password" aria-pressed="false" hidden>Show</button></div><p id="password-help">Passwords are case-sensitive. No account is needed.</p><button class="button red" type="submit">Unlock instruction video <?=icon('arrow')?></button></form>
+<form method="post" class="auth-form"><input type="hidden" name="_csrf" value="<?=h(csrf())?>"><label class="field" for="trick-password"><span>Trick password</span></label><div class="password-input"><input id="trick-password" type="password" name="password" required maxlength="72" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="password-help"><button type="button" class="password-toggle" data-password-toggle="trick-password" aria-label="Show trick password" aria-pressed="false" hidden>Show</button></div><p id="password-help">Uppercase or lowercase both work. No account is needed.</p><button class="button red" type="submit">Unlock instruction video <?=icon('arrow')?></button></form>
 <p class="instruction-help">Can’t find the password? Bring your trick or proof of purchase to the stall and we’ll help.</p></section></div>
 <?php else: ?>
 <section class="instruction-watch" aria-label="Instruction video"><div class="watch-frame">
 <?php $source=$page['video_source'];if(str_starts_with($source,'https://www.youtube-nocookie.com/embed/')||str_starts_with($source,'https://player.vimeo.com/video/')): ?>
 <iframe class="instruction-player" src="<?=h($source)?>" title="<?=h($page['title'])?> instruction video" allow="fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 <?php else: ?><video class="instruction-player" controls playsinline preload="metadata" src="<?=h(str_starts_with($source,'upload:')?'/instruction-video.php?id='.$page['id']:$source)?>">Your browser does not support this video. Please try a current browser.</video><?php endif; ?></div>
-<div class="watch-bottom"><p><?=icon('lock')?> This page locks after two hours. Enter your password again to continue watching.</p><form method="post" class="instruction-lock"><input type="hidden" name="_csrf" value="<?=h(csrf())?>"><input type="hidden" name="action" value="lock"><button class="small-button">Lock this page <?=icon('lock')?></button></form></div>
+<div class="watch-bottom"><p>Access is remembered in this browser for 15 minutes. After that, enter your password again when you refresh or return.</p></div>
 <?php if($page['notes']): ?><div class="instruction-notes"><h2>Before you perform</h2><p><?=nl2br(h($page['notes']))?></p></div><?php endif; ?>
 </section>
 <?php endif; ?><a class="text-link back-to-library" href="/instructions.php">All instruction videos <?=icon('arrow')?></a></section>
@@ -65,5 +61,5 @@ $title=$page?$page['title'].' instructions':'Instruction videos';
 <div class="collection-toolbar"><?php search_control('instruction-search','Find your trick…'); ?><span class="collection-count" role="status" aria-live="polite" data-filter-count="instruction-grid"><?=count($pages)?> videos</span></div>
 <div class="instruction-grid" id="instruction-grid" data-filter-grid="instruction-search"><?php foreach($pages as $item): $linked=$products[$item['product_id']]??null; ?><article class="lesson-card" data-reveal data-filter-item><div class="lesson-visual <?=$linked?'lesson-product-visual':''?>" aria-hidden="true"><?php if($linked): product_visual($linked['product'],$linked['index']); else: ?><div class="lesson-paper"><?php card_back(); ?></div><?php endif; ?><span class="lesson-symbol"><?=icon('play')?></span></div><div class="lesson-card-body"><h2><?=h($item['title'])?></h2><?php if($item['summary']): ?><p class="lesson-summary"><?=h($item['summary'])?></p><?php endif; ?></div><a class="lesson-link" href="/instructions.php?trick=<?=h(rawurlencode($item['slug']))?>"><span>View instructions<span class="sr-only"> for <?=h($item['title'])?></span></span><?=icon('arrow')?></a></article><?php endforeach; ?></div><p class="filter-empty" data-filter-empty="instruction-grid" hidden>No instruction pages found. Try another name, or clear your search.</p>
 <?php endif; ?></section>
-<section class="library-help wrap section"><h2>A few questions.</h2><div class="faq-list"><details><summary>Where do I find my password? <?=icon('chevron')?></summary><p>Your password comes with your trick. Enter it exactly as printed, including capital letters. If it’s missing, bring the trick or proof of purchase to our stall.</p></details><details><summary>Do I need an account? <?=icon('chevron')?></summary><p>No. Choose your trick and enter its shared password. Access lasts for two hours in the same browser. You can unlock it again whenever you want to practise.</p></details><details><summary>Can I watch on my phone? <?=icon('chevron')?></summary><p>Yes. The videos work on phones, tablets and computers. You can pause and replay as you practise.</p></details><details><summary>What if I need more help? <?=icon('chevron')?></summary><p>Come and see us at the market with your trick. <a href="/#visit">Find the stall.</a></p></details></div></section>
+<section class="library-help wrap section"><h2>A few questions.</h2><div class="faq-list"><details><summary>Where do I find my password? <?=icon('chevron')?></summary><p>Your password comes with your trick. Uppercase or lowercase letters both work. If it’s missing, bring the trick or proof of purchase to our stall.</p></details><details><summary>Do I need an account? <?=icon('chevron')?></summary><p>No. Choose your trick and enter its shared password. A cookie remembers access for 15 minutes in the same browser, including when you refresh or return. After that, enter the password again. You can unlock it again whenever you want to practise.</p></details><details><summary>Can I watch on my phone? <?=icon('chevron')?></summary><p>Yes. The videos work on phones, tablets and computers. You can pause and replay as you practise.</p></details><details><summary>What if I need more help? <?=icon('chevron')?></summary><p>Come and see us at the market with your trick. <a href="/#visit">Find the stall.</a></p></details></div></section>
 <?php endif; ?></main><?php site_footer(); ?></body></html>
