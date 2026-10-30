@@ -10,6 +10,14 @@ function instruction_admin(array $row): array {
  $row['has_password']=$row['password_hash']!=='';unset($row['password_hash']);
  $row['published']=(bool)$row['published'];$row['version']=(int)$row['version'];return $row;
 }
+/** Use the published collection's images and the same artwork position as its grid. */
+function instruction_products(): array {
+ $products=[];$visibleIndex=0;
+ foreach(content()['content']['products'] as $product){
+  $products[$product['id']]=['product'=>$product,'index'=>$product['visible']?$visibleIndex++:0];
+ }
+ return $products;
+}
 function instruction_text(array $data,string $key,int $max,bool $required=false): string {
  $v=$data[$key]??'';
  if(!is_string($v)||strlen($v)>$max*4||($required&&!trim($v)))throw new DomainException('Please check the instruction '.$key.' field.');
@@ -49,6 +57,8 @@ function save_instruction(array $data): array {
  $title=instruction_text($data,'title',160,true);$slug=instruction_text($data,'slug',100,true);
  if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D',$slug)||strlen($slug)>100)throw new DomainException('Use a page address with lowercase letters, numbers and single hyphens (for example, svengali-deck).');
  $summary=instruction_text($data,'summary',600);$notes=instruction_text($data,'notes',10000);
+ $productId=instruction_text($data+['product_id'=>$current['product_id']??''],'product_id',80);
+ if($productId!==''&&!isset(instruction_products()[$productId])&&$productId!==($current['product_id']??''))throw new DomainException('That product is no longer in the collection. Publish your collection changes, then select a product.');
  $source=video_source($data['video_source']??'');$published=$data['published']??false;
  if(!is_bool($published))throw new DomainException('Invalid publication status.');
  if($published&&$source==='')throw new DomainException('Add a video before publishing this page.');
@@ -60,12 +70,12 @@ function save_instruction(array $data): array {
  if(!is_int($version)||($current&&$version!==(int)$current['version']))throw new DomainException('Someone else changed this page. Reload it before saving.',409);
  try{
   if($current){
-   $q=db()->prepare('UPDATE instructions SET slug=?,title=?,summary=?,notes=?,video_source=?,password_hash=?,published=?,version=version+1,updated_at=? WHERE id=? AND version=?');
-   $q->execute([$slug,$title,$summary,$notes,$source,$hash,(int)$published,gmdate('c'),$id,$version]);
+   $q=db()->prepare('UPDATE instructions SET slug=?,title=?,summary=?,notes=?,video_source=?,password_hash=?,published=?,product_id=?,version=version+1,updated_at=? WHERE id=? AND version=?');
+   $q->execute([$slug,$title,$summary,$notes,$source,$hash,(int)$published,$productId,gmdate('c'),$id,$version]);
    if($q->rowCount()!==1)throw new DomainException('Someone else changed this page. Reload it before saving.',409);
   }else{
    $id=bin2hex(random_bytes(16));
-   db()->prepare('INSERT INTO instructions(id,slug,title,summary,notes,video_source,password_hash,published,updated_at) VALUES(?,?,?,?,?,?,?,?,?)')->execute([$id,$slug,$title,$summary,$notes,$source,$hash,(int)$published,gmdate('c')]);
+   db()->prepare('INSERT INTO instructions(id,slug,title,summary,notes,video_source,password_hash,published,product_id,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)')->execute([$id,$slug,$title,$summary,$notes,$source,$hash,(int)$published,$productId,gmdate('c')]);
   }
  }catch(PDOException $e){if((int)$e->getCode()===23000)throw new DomainException('That page address is already in use. Choose another.');throw $e;}
  return instruction_admin(instruction_by('id',$id));

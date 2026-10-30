@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.7.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.8.0
 ====================================
 
 WHAT IS INCLUDED
@@ -53,6 +53,16 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
+Version 1.8 adds optional product links to instruction pages. Keep your current
+private folder and custom app/config.php. The existing database gains the link
+field automatically; accounts, passwords, videos and saved pages stay intact.
+Open Instruction videos, select a page, choose its Linked collection product
+and Save instruction page. Its library card and password screen share the
+product's photo/artwork. Later product photo changes follow when published.
+No separate instruction photo upload is needed. Unlinked pages keep their
+standard artwork. Removing a product restores that artwork without breaking
+the instruction page; hiding a product does not hide its published lessons.
+
 Version 1.7 brings all products into one collection, with optional type filters
 and search. The separate playing-card gallery is removed. The catalogue follows
 the supplied Price List.docx: 7 trick decks, 13 visual tricks, 5 sets and the
@@ -122,6 +132,9 @@ Sign in at https://YOUR-DOMAIN/admin/ and choose Instruction videos.
 
 - Click Add instruction page. Give it the trick name and a simple page
   address such as svengali-deck. The title suggests an address automatically.
+- Optionally choose a Linked collection product to share its photo or artwork.
+  On a new blank page, this also suggests the title and address. Publish new
+  products in Collection first. Existing printed page addresses stay unchanged.
 - Add an optional PUBLIC summary. This appears before unlocking; do not put
   any secret instructions or passwords here.
 - Paste a YouTube, Vimeo, or direct HTTPS .mp4 link, OR upload an MP4 privately.

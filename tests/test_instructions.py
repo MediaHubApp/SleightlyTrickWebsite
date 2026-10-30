@@ -72,9 +72,12 @@ class InstructionWorkflow(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory(prefix='sleightly-tests-')
         cls.storage = Path(cls.temp.name) / 'private'
         cls.storage.mkdir()
-        # An original installation has no instructions table. Exercise its additive migration.
+        # Exercise an existing private database with instruction pages predating product links.
         with sqlite3.connect(cls.storage / 'site.sqlite') as db:
             db.execute('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL, session_version INTEGER NOT NULL DEFAULT 1)')
+            db.execute('CREATE TABLE instructions (id TEXT PRIMARY KEY, slug TEXT UNIQUE NOT NULL, title TEXT NOT NULL, summary TEXT NOT NULL, notes TEXT NOT NULL, video_source TEXT NOT NULL, password_hash TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 0, version INTEGER NOT NULL DEFAULT 1, updated_at TEXT NOT NULL)')
+            cls.legacy_row = ('a' * 32, 'existing-trick', 'Existing title', 'Summary', 'Protected notes', 'https://example.test/lesson.mp4', 'existing-password-hash', 1, 7, '2026-01-01')
+            db.execute('INSERT INTO instructions VALUES (?,?,?,?,?,?,?,?,?,?)', cls.legacy_row)
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', 0))
             cls.port = sock.getsockname()[1]
@@ -94,6 +97,9 @@ class InstructionWorkflow(unittest.TestCase):
         code, body, _ = cls.admin.form('/setup.php', {'_csrf': token, 'setup_key': (cls.storage / 'setup-key.txt').read_text().strip(), 'email': 'owner@example.test', 'password': 'Test owner password 123', 'confirm': 'Test owner password 123'})
         assert code == 200 and b'editor-data' in body, 'Owner setup failed'
         cls.csrf = json.loads(re.search(rb'id="editor-data">(.*?)</script>', body, re.S)[1])['csrf']
+        with sqlite3.connect(cls.storage / 'site.sqlite') as db:
+            cls.upgraded_row = db.execute('SELECT * FROM instructions WHERE id=?', (cls.legacy_row[0],)).fetchone()
+            db.execute('DELETE FROM instructions WHERE id=?', (cls.legacy_row[0],))
 
     @classmethod
     def tearDownClass(cls):
@@ -240,6 +246,65 @@ class InstructionWorkflow(unittest.TestCase):
         self.assertIn('no-store', headers['Cache-Control'])
         self.assertIn('noindex', headers['X-Robots-Tag'])
         self.assertIn(b'&lt;special&gt;', body)
+
+    def test_existing_instruction_rows_survive_additive_upgrade(self):
+        self.assertEqual(self.upgraded_row, (*self.legacy_row, ''))
+        for _ in range(2):
+            self.assertEqual(self.customer.request(self.path)[0], 200)
+        with sqlite3.connect(self.storage / 'site.sqlite') as db:
+            columns = [row[1] for row in db.execute('PRAGMA table_info(instructions)')]
+            self.assertEqual(columns.count('product_id'), 1)
+
+    def test_linked_product_photo_follows_collection_and_survives_removal(self):
+        _, original = self.admin.api('load')
+        self.update(product_id='invisible')
+        self.assertEqual(self.page['product_id'], 'invisible')
+        # Legacy clients which omit the new field must keep the existing link.
+        legacy = {k:v for k,v in self.page.items() if k!='product_id'}
+        self.page = self.save(**{**legacy, 'password':'', 'title':'Linked lesson'})
+        self.assertEqual(self.page['product_id'], 'invisible')
+        def publish(products):
+            _, loaded = self.admin.api('load')
+            loaded['content']['products'] = products
+            code, saved = self.admin.api('save', loaded, self.csrf)
+            self.assertEqual(code, 200, saved)
+        try:
+            products = json.loads(json.dumps(original['content']['products']))
+            for image in ['/images/banner.jpeg', '/images/still-life.png']:
+                products[0]['image'] = image
+                publish(products)
+                for path in ['/instructions.php', self.path]:
+                    code, body, _ = self.customer.request(path)
+                    self.assertEqual(code, 200)
+                    self.assertIn(('src="'+image+'"').encode(), body)
+                    self.assertNotIn(b'PRIVATE SECRET NOTES', body)
+                    self.assertNotIn(b'dQw4w9WgXcQ', body)
+            products[0]['visible'] = False
+            publish(products)
+            self.assertIn(b'lesson-product-art', self.customer.request(self.path)[1], 'Hiding a product must not hide a separately published lesson')
+            publish(products[1:])
+            self.assertNotIn(b'lesson-product-art', self.customer.request(self.path)[1])
+            self.update(summary='Can still edit after product deletion')
+            self.assertEqual(self.page['product_id'], 'invisible')
+            self.assertEqual(self.unlock()[0], 200)
+            self.update(product_id='')
+            self.assertEqual(self.page['product_id'], '')
+        finally:
+            _, loaded = self.admin.api('load')
+            code, restored = self.admin.api('save', {'content':original['content'], 'version':loaded['version']}, self.csrf)
+            self.assertEqual(code, 200, restored)
+
+    def test_linked_product_art_matches_collection_and_validation(self):
+        self.update(product_id='brainwave')
+        home = self.customer.request('/')[1]
+        artwork = re.search(rb'<div class="product-scene scene-cards tone-1[^>]*>.*?</div>\s*</div>', home, re.S)[0]
+        for path in ['/instructions.php', self.path]:
+            self.assertIn(artwork, self.customer.request(path)[1])
+        for invalid in ['missing-product', ['invisible'], 42, '../private/site.sqlite']:
+            with self.subTest(invalid=invalid):
+                self.assertEqual(self.admin.api('save-instruction', {**self.page, 'product_id':invalid}, self.csrf)[0], 400)
+        self.update(product_id='')
+        self.assertNotIn(b'lesson-product-art', self.customer.request(self.path)[1])
 
     def test_correct_wrong_password_lock_and_csrf(self):
         code, body, _ = self.unlock('wrong')

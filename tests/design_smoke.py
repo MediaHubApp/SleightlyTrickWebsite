@@ -14,8 +14,11 @@ try:
     code,raw,_=server.admin.request('/admin/api.php?action=upload-video',body,{'Content-Type':f'multipart/form-data; boundary={boundary}','X-CSRF-Token':server.csrf})
     assert code==201
     source=__import__('json').loads(raw)['source']
+    _, catalogue=server.admin.api('load')
+    next(product for product in catalogue['content']['products'] if product['id']=='cups')['image']='/images/still-life.png'
+    assert server.admin.api('save',catalogue,server.csrf)[0]==200
     for title,slug,summary in [('Invisible Deck','invisible-deck','Instructions for the Invisible Deck.'),('Cups and Balls','cups-and-balls','Learn the Cups and Balls routine.'),('Cardtoon 2','cardtoon-2','How to use your Cardtoon 2 deck.')]:
-        code,data=server.admin.api('save-instruction',{'title':title,'slug':slug,'summary':summary,'notes':'Take your time and practise the handling before your first performance.\n\nRewatch any details you want to work on. Keep the secret, and enjoy that first reaction.','password':'Practice-Secret','video_source':source,'published':True},server.csrf)
+        code,data=server.admin.api('save-instruction',{'title':title,'slug':slug,'summary':summary,'product_id':{'invisible-deck':'invisible','cups-and-balls':'cups'}.get(slug,''),'notes':'Take your time and practise the handling before your first performance.\n\nRewatch any details you want to work on. Keep the secret, and enjoy that first reaction.','password':'Practice-Secret','video_source':source,'published':True},server.csrf)
         assert code==200,data
     with sync_playwright() as p:
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
@@ -116,7 +119,7 @@ try:
             context=browser.new_context(viewport={'width':width,'height':900})
             view=context.new_page()
             view.on('pageerror',lambda e:errors.append(str(e)))
-            for path,label in [('/','home'),('/instructions.php','library'),('/instructions.php?trick=invisible-deck','gate'),('/admin/login.php','login')]:
+            for path,label in [('/','home'),('/instructions.php','library'),('/instructions.php?trick=invisible-deck','gate'),('/instructions.php?trick=cups-and-balls','photo-gate'),('/admin/login.php','login')]:
                 view.goto(server.base+path)
                 view.evaluate('document.fonts.ready')
                 assert view.evaluate('document.documentElement.scrollWidth <= innerWidth'),f'Horizontal overflow: {width}px {path}'

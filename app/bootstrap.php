@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.8.0';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -29,7 +29,12 @@ function db(): PDO {
  $pdo->exec('CREATE TABLE IF NOT EXISTS content (id INTEGER PRIMARY KEY CHECK(id=1), body TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, updated_at TEXT NOT NULL)');
  $pdo->exec('CREATE TABLE IF NOT EXISTS attempts (scope TEXT NOT NULL, attempted_at INTEGER NOT NULL)');
  $pdo->exec('CREATE INDEX IF NOT EXISTS idx_attempt_scope_time ON attempts(scope, attempted_at)');
- $pdo->exec('CREATE TABLE IF NOT EXISTS instructions (id TEXT PRIMARY KEY, slug TEXT UNIQUE NOT NULL, title TEXT NOT NULL, summary TEXT NOT NULL, notes TEXT NOT NULL, video_source TEXT NOT NULL, password_hash TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 0, version INTEGER NOT NULL DEFAULT 1, updated_at TEXT NOT NULL)');
+ $pdo->exec("CREATE TABLE IF NOT EXISTS instructions (id TEXT PRIMARY KEY, slug TEXT UNIQUE NOT NULL, title TEXT NOT NULL, summary TEXT NOT NULL, notes TEXT NOT NULL, video_source TEXT NOT NULL, password_hash TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 0, version INTEGER NOT NULL DEFAULT 1, updated_at TEXT NOT NULL, product_id TEXT NOT NULL DEFAULT '')");
+ // Existing private databases gain an optional link without rebuilding any rows.
+ if(!in_array('product_id',array_column($pdo->query('PRAGMA table_info(instructions)')->fetchAll(),'name'),true)){
+  try{$pdo->exec("ALTER TABLE instructions ADD COLUMN product_id TEXT NOT NULL DEFAULT ''");}
+  catch(PDOException $e){if(!in_array('product_id',array_column($pdo->query('PRAGMA table_info(instructions)')->fetchAll(),'name'),true))throw $e;}
+ }
  @chmod($path,0600);return $pdo;
 }
 function installed(): bool { return (int)db()->query('SELECT COUNT(*) FROM users')->fetchColumn()>0; }

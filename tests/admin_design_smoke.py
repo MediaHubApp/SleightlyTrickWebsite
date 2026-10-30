@@ -56,10 +56,14 @@ try:
         expect(page.locator('#save-dock')).to_be_hidden()
         page.screenshot(path=str(artifacts/'instructions-desktop.png'),animations='disabled')
         page.get_by_role('button',name='+ Add instruction page',exact=True).click()
-        page.get_by_label('Trick / page title',exact=True).fill('Cups and Balls')
+        page.get_by_label('Linked collection product (optional)').select_option('cups')
+        expect(page.get_by_label('Trick / page title',exact=True)).to_have_value('Cups and Balls')
+        expect(page.locator('#instruction-product-detail')).to_contain_text('collection artwork')
         page.get_by_label('Shared trick password').fill('Practice-Secret')
         page.get_by_role('button',name='Save instruction page',exact=True).click()
         expect(page.locator('#instruction-status')).to_contain_text('The page is hidden')
+        page.evaluate('scrollTo({top:0,behavior:"instant"})')
+        page.screenshot(path=str(artifacts/'instruction-product-link.png'),animations='disabled')
         # Every portal tab must fit a narrow phone, tablet and desktop; save controls must stay on screen.
         for width in [320,390,768,1024,1440]:
             page.set_viewport_size({'width':width,'height':900})

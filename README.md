@@ -4,6 +4,27 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## The 1.8 linked instruction pages
+
+In **Admin → Instruction videos**, select a **Linked collection product** and
+save the instruction page. Its library card and password screen now share the
+product’s collection photo or artwork. Publish a replacement product photo in
+Collection and the linked instruction pages follow automatically; no second
+upload is needed. The editor previews the shared photo. New pages can also take
+their initial title and address from the selected product.
+
+Product links are optional. Existing pages keep their titles, addresses, videos,
+passwords and publication settings until edited. The private database gains one
+optional field automatically; keep your existing private folder when upgrading.
+Hiding a product leaves the lesson’s own publication setting in control. Removing
+a product falls back to the standard instruction artwork, and the lesson can
+still be edited, relinked or unlinked. Publish new collection products before
+selecting them in the instruction editor.
+
+[Linked instruction editor](docs/redesign/admin-instruction-product.png) ·
+[Shared instruction artwork](docs/redesign/instruction-library.png) ·
+[Linked password page](docs/redesign/instruction-product-gate.png).
+
 ## The 1.7 combined collection
 
 One catalogue now holds trick decks, visual magic, magic sets and playing cards.
@@ -127,7 +148,7 @@ PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/admin_design_smoke.py
 ```
 
-The automated suite has 21 passing tests covering original-site setup/migration,
+The automated suite has 24 passing tests covering original-site setup/migration,
 editing, customer gates, CSRF, rate limiting, expiry, per-page access,
 password replacement, hiding/deleting, private uploads and byte ranges,
 malformed inputs, editor permissions and revocation, exact card pip counts/colours,
@@ -138,7 +159,9 @@ files over the former 5 MB cap, widths/heights over 16,000 pixels, images over
 Catalogue tests also check the supplied names and prices, grouped pricing, safe
 upgrades, name matching, retained photos/IDs, and preservation of later admin
 edits/removals. HTTP checks cover the first upgrade, publication, reload and
-continued instruction access. All automated tests use temporary data.
+continued instruction access. Linked-page tests check the additive database
+upgrade, matching collection artwork, photo changes, invalid product links,
+legacy clients, hiding/removing products and unlinking. All automated tests use temporary data.
 The browser smoke test requires Python Playwright and `/usr/bin/chromium`.
 It exercises product-photo uploads above 5 MB, opening/banner uploads,
 publishing/reloading, admin page creation, real video upload, saved-page reload,

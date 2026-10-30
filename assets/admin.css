@@ -28,3 +28,6 @@
 .admin-page .button:disabled{transform:none;box-shadow:none}.save-dock .button:disabled:hover{background:#ede7dd;color:#968577;box-shadow:none;transform:none}
 @media(max-width:700px){.login-card-art{right:-2px}.save-dock{bottom:max(12px,env(safe-area-inset-bottom))}}
 @media(max-width:360px){.login-card-art{transform:scale(.42) rotate(-5deg);right:-6px}}
+
+.instruction-product-preview{display:flex;align-items:center;gap:18px;padding:17px;margin:0 0 26px;border:1px solid #e1d4c4;border-radius:12px;background:#f3ede3}.instruction-product-preview>img{width:96px;height:80px;flex-shrink:0;object-fit:contain;border-radius:8px;background:#fffaf1}.instruction-product-preview>div{min-width:0}.instruction-product-preview strong{font-size:14px;overflow-wrap:anywhere}.instruction-product-preview p{font-size:12px;line-height:1.8;color:#887263;margin:7px 0 0}#instruction-product{max-width:100%}
+@media(max-width:600px){.instruction-product-preview{gap:13px;padding:13px}.instruction-product-preview>img{width:72px;height:65px}}
