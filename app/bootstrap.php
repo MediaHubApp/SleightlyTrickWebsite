@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -92,7 +92,7 @@ function validate_content(mixed $data): array {
  if(!is_array($data))throw new DomainException('Invalid website content.');$clean=[];
  $limits=['eyebrow'=>160,'heroTitle'=>160,'heroAccent'=>160,'heroDescription'=>700,'aboutTitle'=>160,'aboutText'=>1200,'aboutSecond'=>800,'magicTitle'=>160,'magicIntro'=>500,'cardsTitle'=>160,'cardsIntro'=>500,'visitTitle'=>160,'location'=>160,'visitText'=>700,'tradingDays'=>300,'email'=>200,'notice'=>400];
  foreach($limits as $key=>$max){$value=$data[$key]??null;if(!is_string($value)||strlen($value)>$max*4||(!in_array($key,['tradingDays','email','notice'],true)&&!trim($value)))throw new DomainException('Please check the '.$key.' field.');$clean[$key]=trim($value);}
- if($clean['email'])$clean['email']=valid_email($clean['email']);$clean['heroImage']=image_path($data['heroImage']??null,false);$clean['bannerImage']=image_path($data['bannerImage']??null,false);
+ if($clean['email'])$clean['email']=valid_email($clean['email']);$clean['heroImage']=image_path($data['heroImage']??null,false);$clean['bannerImage']=image_path($data['bannerImage']??null,false);$clean['storyImage']=image_path($data['storyImage']??defaults()['storyImage']);
  if(!isset($data['products'])||!is_array($data['products'])||count($data['products'])>100)throw new DomainException('Use no more than 100 products.');$ids=[];$clean['products']=[];
  foreach($data['products'] as $p){if(!is_array($p))throw new DomainException('Invalid product.');$item=[];foreach(['id'=>80,'name'=>100,'description'=>700,'label'=>60] as $k=>$max){$v=$p[$k]??null;if(!is_string($v)||strlen($v)>$max*4||($k!=='label'&&!trim($v)))throw new DomainException('Please check each product name and description.');$item[$k]=trim($v);}
  if(isset($ids[$item['id']]))throw new DomainException('Duplicate product.');$ids[$item['id']]=true;

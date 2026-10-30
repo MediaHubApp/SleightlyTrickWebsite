@@ -28,3 +28,4 @@
 .admin-page .button:disabled{transform:none;box-shadow:none}.save-dock .button:disabled:hover{background:#ede7dd;color:#968577;box-shadow:none;transform:none}
 @media(max-width:700px){.login-card-art{right:-2px}.save-dock{bottom:max(12px,env(safe-area-inset-bottom))}}
 @media(max-width:360px){.login-card-art{transform:scale(.42) rotate(-5deg);right:-6px}}
+.preview-scene>img{object-position:center 57%}.photo-field:has(img[hidden]){padding-bottom:4px}.login-art::after{display:none}

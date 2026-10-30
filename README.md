@@ -4,22 +4,26 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
-## The 1.5 storefront and portal
+## The 1.6 artwork update
 
-An immersive, modern interface in burgundy, cream and charcoal: layered hero
-artwork, a floating navigation frame, visual collection routes, dimensional
-product scenes and a swipeable deck gallery. Product details open in native
-keyboard-accessible dialogs with complete descriptions and prices. The
-instruction library, password gate and video player use the same visual system.
-Refined surfaces, layered paper and quieter navigation cues carry through the site.
-Product dialogs now let visitors browse the current collection with previous/next
-buttons or arrow keys, without returning to the grid.
+The burgundy, cream and charcoal design now uses established card artwork and
+real photography. The generic card backs have been replaced with the familiar
+Bicycle Rider Back design from xCards, accompanied by standard card faces.
+The original SVGs, upstream attribution and LGPL/GPL licence texts ship with
+both the source and the deployment ZIP. The red version is a CSS hue treatment
+of the unchanged blue artwork; no generative image tool was used.
 
-Motion includes staggered scroll reveals, paper/card hover transitions,
-subtle pointer depth on the hero, a reading-progress line and dialog entrance
-animations. Reduced-motion preferences are respected. Nothing scrolls or
-advances automatically, and the public catalogue remains readable without
-JavaScript. There are no decorative section labels or invented purchase links.
+The generated cup/tabletop still lifes have been removed. The opening now uses
+a real photograph by JT on Unsplash; it shows a card game, not our stall or
+actual shop stock. The story section uses card artwork until the stallholders
+add their own photograph through **Admin → Photos**. That photograph can be
+published, replaced or reset to the card artwork. Existing uploaded images
+always take priority. [Image credits](credits.php) lists the sources.
+
+The layout, product dialogs, swipeable deck gallery and motion remain, with
+quieter shadows and more natural card arrangements. Reduced-motion preferences
+are respected, nothing advances automatically, and the public catalogue and
+customer password forms remain usable without JavaScript.
 
 [![Homepage](docs/redesign/homepage.png)](docs/redesign/homepage-full.png)
 
@@ -41,14 +45,13 @@ works with arrow keys and Home/End, and Ctrl/Cmd+S saves the active content edit
 [Admin collection](docs/redesign/admin-collection.png) ·
 [Instruction editor](docs/redesign/admin-instructions.png) ·
 [Admin mobile](docs/redesign/admin-mobile.png) ·
+[Photo editor](docs/redesign/admin-photos.png) ·
 [Stallholder sign-in](docs/redesign/admin-login.png).
 
-The cup artwork retains the three correctly inverted cups. Faces are drawn
-as exact SVGs with black spades/clubs, red hearts/diamonds, matching opposing
-indices and correct pip counts. Generic card backs and prop illustrations
-are unbranded; actual uploaded product photos take priority. The new tabletop
-still life shows only face-down cards. These images are illustrative, not
-photographs of the products for sale. Screenshots use sample instruction pages;
+Product card artwork is illustrative; it is not a photograph of a specific
+edition or its packaging. Upload your actual stock photographs in Collection
+to show the correct editions, especially for character-themed decks. Generic
+prop illustrations are deliberately simple. Screenshots use sample lessons;
 no demo passwords, customer pages or private videos are included in the ZIP.
 
 Existing accounts, products, prices and private videos remain compatible.
@@ -117,7 +120,7 @@ The automated suite has 14 passing tests covering original-site setup/migration,
 editing, customer gates, CSRF, rate limiting, expiry, per-page access,
 password replacement, hiding/deleting, private uploads and byte ranges,
 malformed inputs, editor permissions and revocation, exact card pip counts/colours,
-card indices, compatible copy upgrades and a real upload above the former
+licensed Rider Back integrity, compatible copy/image upgrades and a real upload above the former
 200 MB limit with protected streaming beyond that boundary. It uses temporary data.
 The browser smoke test requires Python Playwright and `/usr/bin/chromium`.
 It exercises admin page creation, real video upload, saved-page reload,
@@ -133,7 +136,7 @@ the motion preference changes.
 
 The portal smoke test checks live local previews versus published content,
 keyboard publication, product search, navigation orientation, all six admin tabs
-at five widths, mobile sign-out and reduced motion.
+at five widths, mobile sign-out, story-photo upload/publication/reset and reduced motion.
 
 Real YouTube/Vimeo playback and production Plesk settings require validation
 with your hosting account and actual video links. The test video is a tiny

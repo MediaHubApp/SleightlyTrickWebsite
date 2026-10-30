@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.5.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.6.0
 ====================================
 
 WHAT IS INCLUDED
@@ -53,7 +53,7 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
-Version 1.5 refines the immersive modern layout with layered hero artwork,
+Version 1.6 retains the immersive modern layout with layered hero artwork,
 visual product galleries, product-detail dialogs, a swipeable deck collection
 and matching instruction pages. Motion respects reduced-motion settings;
 public content and password forms also work without JavaScript. The gallery
@@ -71,13 +71,19 @@ product names, prices, visibility and uploaded photos are preserved. The
 editor shows the refreshed content, which is stored when you next publish.
 The old location-line and short product labels are no longer used.
 
-The new hero artwork shows three upside-down magician’s cups, with solid
-bases uppermost. The displayed card illustrations have correct suit colours,
-rank indices and pip counts. The still life is illustrative artwork; replace
-it through Photos if you prefer your own picture. Use a wide landscape image
-with the subject toward the right for the framed hero image. The additional
-card-table artwork and generic product illustrations are included. Upload
-actual product photos in Collection to replace the default illustrations.
+The generic card backs are now replaced by the familiar Bicycle Rider Back
+artwork from xCards, with standard card faces. Original SVG source and LGPL/GPL
+licence texts are included in assets/cards. The red presentation is a CSS hue
+treatment of the original blue artwork. The generated still-life photographs
+have been removed. Existing stock hero paths update automatically; your uploaded
+photographs are preserved. The default opening photograph is a real card-game
+photo by JT on Unsplash. Sources are listed at /credits.php.
+
+The story section uses card artwork by default. In Admin > Photos, upload your
+own stall, demonstration or cards photograph to make it personal. Publish your
+changes to show it publicly; Use card artwork instead restores the default.
+Product illustrations are not photos of specific editions or packaging. Upload
+your real product photographs in Collection, especially for themed decks.
 
 Keep private/sleightly-tricky and all its contents. Existing accounts, text,
 products and photos remain in place; the new table is created automatically.
@@ -164,7 +170,9 @@ for high traffic or very large files.
   The opening preview updates as you type; visitors see changes only after
   you publish. The preview is a compact approximation of the responsive site.
 - Collection: search products and change prices, descriptions and visibility.
-- Photos: upload your main photograph, banner and optional product images.
+- Photos: upload your main photograph, story photograph and market banner.
+  Product photographs are edited in Collection. Reset the story photograph to
+  card artwork with its dedicated button; publish to apply the change.
 - Publish changes saves those website changes. Ctrl/Cmd+S also saves the
   active website editor, or the current instruction page when it is open.
 - Editor access: owner-only editor-account creation/removal; no emails sent.
@@ -221,7 +229,8 @@ TROUBLESHOOTING
   password reset needs a server administrator (no public email-reset endpoint).
 
 VALIDATION
-Local PHP 8.4 tests cover card pip counts, suit colours, opposing indices,
+Local PHP 8.4 tests cover standard card pip counts, suit colours, proportions,
+licensed Rider Back integrity,
 compatible stock-copy upgrades, setup, original-site data migration and
 editing, permissions, password gates, CSRF, throttling, hidden/deleted pages,
 password revocation, protected MP4 streaming/ranges, and input validation.
