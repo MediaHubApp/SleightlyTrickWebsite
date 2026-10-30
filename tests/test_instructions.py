@@ -306,7 +306,7 @@ class InstructionWorkflow(unittest.TestCase):
         self.update(product_id='')
         self.assertNotIn(b'lesson-product-art', self.customer.request(self.path)[1])
 
-    def test_correct_wrong_password_lock_and_csrf(self):
+    def test_correct_wrong_password_and_csrf(self):
         code, body, _ = self.unlock('wrong')
         self.assertEqual(code, 403)
         self.assertNotIn(b'dQw4w9WgXcQ', body)
@@ -318,8 +318,32 @@ class InstructionWorkflow(unittest.TestCase):
         self.assertIn(b'&lt;safe&gt;', body)
         self.assertIn(b'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', body)
         self.assertIn('https://www.youtube-nocookie.com', headers['Content-Security-Policy'])
-        _, body, _ = self.customer.form(self.path, {'_csrf': self.customer.token(self.path), 'action': 'lock'})
-        self.assertNotIn(b'PRIVATE SECRET NOTES', body)
+        self.assertNotIn(b'Lock this page', body)
+        self.assertIn(b'15 minutes', body)
+
+
+    def test_instruction_password_case_and_fixed_expiry(self):
+        # Simulate an existing lowercase password hash without resaving the page.
+        self.update(password='printed-secret')
+        for password in ['PRINTED-SECRET', 'pRiNtEd-SeCrEt', 'printed-secret']:
+            self.assertEqual(self.unlock(password)[0], 200)
+        session = next(path for path in (self.storage / 'sessions').glob('sess_*')
+                       if self.page['id'] in path.read_text())
+        text = session.read_text()
+        started = int(re.search(r'"started";i:(\d+)', text)[1])
+        expires = int(re.search(r'"expires";i:(\d+)', text)[1])
+        self.assertEqual(expires - started, 900)
+        # Move the grant close to expiry. Reads must preserve the original deadline.
+        text = re.sub(r'("started";i:)\d+', lambda m: m[1] + str(started - 890), text)
+        text = re.sub(r'("expires";i:)\d+', lambda m: m[1] + str(expires - 890), text)
+        session.write_text(text)
+        for _ in range(2):
+            self.assertIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
+        self.assertEqual(int(re.search(r'"expires";i:(\d+)', session.read_text())[1]), expires - 890)
+        # Legacy two-hour grants cannot bypass the new duration.
+        text = re.sub(r'"started";i:\d+;', '', session.read_text())
+        session.write_text(text)
+        self.assertNotIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
 
     def test_password_replacement_and_expiry(self):
         self.unlock()
@@ -327,7 +351,7 @@ class InstructionWorkflow(unittest.TestCase):
         self.assertNotIn(b'PRIVATE SECRET NOTES', self.customer.request(self.path)[1])
         self.assertEqual(self.unlock()[0], 403)
         self.assertIn(b'PRIVATE SECRET NOTES', self.unlock('New-Printed-Secret')[1])
-        # Expire this test session on disk, as PHP would after its two-hour grant.
+        # Expire this test session on disk, as PHP would after its 15-minute grant.
         for path in (self.storage / 'sessions').glob('sess_*'):
             text = path.read_text()
             if self.page['id'] in text:

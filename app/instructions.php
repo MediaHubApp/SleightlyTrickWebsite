@@ -65,7 +65,7 @@ function save_instruction(array $data): array {
  $password=$data['password']??'';
  if(!is_string($password)||strlen($password)>72||($password!==''&&trim($password)===''))throw new DomainException('Use a shared password between 1 and 72 bytes.');
  if(!$current&&$password==='')throw new DomainException('Set the shared password supplied with this trick.');
- $hash=$password!==''?password_hash($password,PASSWORD_DEFAULT):$current['password_hash'];
+ $hash=$password!==''?password_hash(strtolower($password),PASSWORD_DEFAULT):$current['password_hash'];
  $version=$data['version']??0;
  if(!is_int($version)||($current&&$version!==(int)$current['version']))throw new DomainException('Someone else changed this page. Reload it before saving.',409);
  try{
@@ -82,7 +82,7 @@ function save_instruction(array $data): array {
 }
 function instruction_unlocked(array $page): bool {
  $grant=$_SESSION['instruction_access'][$page['id']]??null;
- return (bool)$page['published']&&is_array($grant)&&($grant['expires']??0)>time()&&hash_equals($page['password_hash'],$grant['signature']??'');
+ return (bool)$page['published']&&is_array($grant)&&isset($grant['started'])&&($grant['expires']??0)>time()&&($grant['started']+900)>time()&&hash_equals($page['password_hash'],$grant['signature']??'');
 }
 function upload_instruction_video(): string {
  $f=$_FILES['file']??null;
