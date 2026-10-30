@@ -6,7 +6,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 root = Path(__file__).resolve().parents[1]
 public_files = ['.htaccess', 'favicon.svg', 'index.php', 'instructions.php',
-                'instruction-video.php', 'media.php', 'robots.txt', 'setup.php', 'credits.php']
+                'instruction-video.php', 'media.php', 'robots.txt', 'setup.php']
 for directory in ['admin', 'app', 'assets', 'images']:
     public_files.extend(str(p.relative_to(root)) for p in (root / directory).rglob('*') if p.is_file())
 entries = {f'httpdocs/{name}': root / name for name in sorted(public_files)}

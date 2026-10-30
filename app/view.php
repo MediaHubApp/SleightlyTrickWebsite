@@ -39,26 +39,31 @@ function site_header(string $active=''): void { ?>
 </div></header>
 <?php }
 function site_footer(): void { ?>
-<footer class="site-footer"><div class="wrap"><div class="footer-top"><h2>See you<br>at the stall.</h2><a class="footer-visit" href="/#visit" aria-label="Find the stall"><?=icon('arrow-up')?></a></div><div class="footer-main"><div><?php brand('footer-brand'); ?><p>Magic tricks &amp; playing cards.<br>Sudbury, Suffolk.</p></div><nav aria-label="Footer navigation"><a href="/#magic">Magic tricks</a><a href="/#cards">Playing cards</a><a href="/instructions.php">Instruction videos</a><a href="/#story">About us</a><a href="/#visit">Visit the stall</a></nav></div><div class="footer-bottom"><span>© <?=date('Y')?> Sleightly Tricky</span><a href="/credits.php">Image credits</a><a href="/admin/">Stallholder login <?=icon('arrow-up')?></a></div></div></footer>
+<footer class="site-footer"><div class="wrap"><div class="footer-top"><h2>See you<br>at the stall.</h2><a class="footer-visit" href="/#visit" aria-label="Find the stall"><?=icon('arrow-up')?></a></div><div class="footer-main"><div><?php brand('footer-brand'); ?><p>Magic tricks &amp; playing cards.<br>Sudbury, Suffolk.</p></div><nav aria-label="Footer navigation"><a href="/#magic">Magic tricks</a><a href="/#cards">Playing cards</a><a href="/instructions.php">Instruction videos</a><a href="/#story">About us</a><a href="/#visit">Visit the stall</a></nav></div><div class="footer-bottom"><span>© <?=date('Y')?> Sleightly Tricky</span><a href="/admin/">Stallholder login <?=icon('arrow-up')?></a></div></div></footer>
 <?php }
 function search_control(string $id,string $placeholder): void { ?>
 <div class="collection-search" data-enhance hidden><label for="<?=h($id)?>" class="sr-only"><?=h($placeholder)?></label><?=icon('search')?><input type="search" id="<?=h($id)?>" placeholder="<?=h($placeholder)?>" autocomplete="off"><button type="button" class="search-clear" data-search-clear="<?=h($id)?>" aria-label="Clear search" hidden>×</button></div>
 <?php }
-/** Established, non-generated card artwork; source and licences ship with the SVGs. */
+/** Standard poker-card proportions, explicit suit colours and exact pip layouts. */
 function playing_card(string $suit='spades',int $rank=1): void {
- $suits=['spades'=>'S','clubs'=>'C','hearts'=>'H','diamonds'=>'D'];
- if(!isset($suits[$suit])||!in_array($rank,[1,2,7],true))throw new LogicException('Unsupported card artwork.');
- $code=($rank===1?'A':$rank).$suits[$suit];
- echo '<img class="playing-card card-face" data-suit="'.h($suit).'" data-rank="'.$rank.'" src="/assets/cards/faces/'.$code.'.svg" alt="" width="179" height="250" loading="lazy" decoding="async" aria-hidden="true">';
-}
+ $paths=[
+  'spades'=>'M0-10C-3-6-10-2-10 3C-10 9-3 10 0 5C3 10 10 9 10 3C10-2 3-6 0-10ZM0 4-4 12H4Z',
+  'hearts'=>'M0 11C-3 7-11 1-11-4C-11-12-2-13 0-6C2-13 11-12 11-4C11 1 3 7 0 11Z',
+  'diamonds'=>'M0-12 9 0 0 12-9 0Z',
+  'clubs'=>'M-3-1C-11-7-15 3-10 7C-6 10-2 7 0 4C2 7 6 10 10 7C15 3 11-7 3-1C11-12-11-12-3-1ZM0 3-4 12H4Z',
+ ];
+ if(!isset($paths[$suit])||!in_array($rank,[1,2,7],true))throw new LogicException('Unsupported card artwork.');
+ $colour=in_array($suit,['hearts','diamonds'],true)?'#af2433':'#1c1c1a';
+ $pips=match($rank){1=>[[125,175,0]],2=>[[125,100,0],[125,250,180]],7=>[[75,90,0],[175,90,0],[75,175,0],[175,175,0],[75,260,180],[175,260,180],[125,132,0]]};
+ ?>
+<svg class="playing-card" data-suit="<?=h($suit)?>" data-rank="<?=$rank?>" viewBox="0 0 250 350" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="1" y="1" width="248" height="348" rx="12" fill="#fffdf5" stroke="#d7d1c5" stroke-width="1.5"/><g fill="<?=$colour?>"><g class="card-index"><text x="24" y="39" text-anchor="middle" font-family="Georgia,serif" font-size="25"><?=$rank===1?'A':$rank?></text><path data-index-suit="top" d="<?=$paths[$suit]?>" transform="translate(24 58) scale(.65)"/></g><g class="card-index" transform="rotate(180 125 175)"><text x="24" y="39" text-anchor="middle" font-family="Georgia,serif" font-size="25"><?=$rank===1?'A':$rank?></text><path data-index-suit="bottom" d="<?=$paths[$suit]?>" transform="translate(24 58) scale(.65)"/></g><?php foreach($pips as [$x,$y,$rotation]): ?><path data-pip="true" d="<?=$paths[$suit]?>" transform="translate(<?=$x?> <?=$y?>) rotate(<?=$rotation?>) scale(<?=$rank===1?3:1.4?>)"/><?php endforeach; ?></g></svg>
+<?php }
 function card_study(): void { ?>
-<div class="card-study" aria-hidden="true"><div class="study-card study-spade"><img class="playing-card card-face" src="/assets/cards/faces/KS.svg" alt="" width="179" height="250" loading="lazy" aria-hidden="true"></div><div class="study-card study-heart"><?php playing_card('hearts',7); ?></div><div class="study-card study-club"><?php card_back(true); ?></div></div>
+<div class="card-study" aria-hidden="true"><div class="study-card study-spade"><?php playing_card('spades',1); ?></div><div class="study-card study-heart"><?php playing_card('hearts',7); ?></div><div class="study-card study-club"><?php playing_card('clubs',2); ?></div></div>
 <?php }
 /** Refresh only unchanged stock copy; preserve custom text, products and photos. */
 function design_content(array $content): array {
  $previous=require __DIR__.'/previous-copy.php';$new=defaults();
- if(in_array($content['heroImage']??'',['/images/hero.png','/images/still-life.png'],true))$content['heroImage']=$new['heroImage'];
- $content['storyImage']=$content['storyImage']??$new['storyImage'];
  foreach($previous as $key=>$value){if($key!=='products'&&array_key_exists($key,$content)&&$content[$key]===$value)$content[$key]=$new[$key];}
  $oldProducts=array_column($previous['products'],'description','id');$newProducts=array_column($new['products'],'description','id');
  if(isset($content['products'])&&is_array($content['products']))foreach($content['products'] as &$product){
@@ -69,17 +74,17 @@ function design_content(array $content): array {
  return $content;
 }
 
-/** The actual Rider Back design, with a restrained red presentation variant. */
-function card_back(bool $blue=false): void {
- echo '<img class="playing-card card-back '.($blue?'rider-blue':'rider-red').'" src="/assets/cards/rider-back.svg" alt="" width="800" height="1130" loading="lazy" decoding="async" aria-hidden="true">';
-}
+/** A generic engraved back, deliberately unbranded and with no face pips. */
+function card_back(bool $black=false): void { ?>
+<svg class="playing-card card-back" viewBox="0 0 250 350" aria-hidden="true"><rect x="1" y="1" width="248" height="348" rx="12" fill="#fffaf0" stroke="#cfc5b6"/><rect x="14" y="14" width="222" height="322" rx="5" fill="<?=$black?'#272c2b':'#872536'?>"/><svg x="22" y="22" width="206" height="306" viewBox="0 0 206 306"><g stroke="#f6ddc3" stroke-width=".8" opacity=".45"><?php for($x=-330;$x<520;$x+=19): ?><path d="M<?=$x?> 0l306 306M<?=$x?> 0l-306 306"/><?php endfor; ?></g></svg><rect x="22" y="22" width="206" height="306" rx="3" fill="none" stroke="#ecd1b0" stroke-width="1"/><ellipse cx="125" cy="175" rx="66" ry="96" fill="<?=$black?'#272c2b':'#872536'?>" stroke="#ecd1b0" stroke-width="1"/><ellipse cx="125" cy="175" rx="57" ry="85" fill="none" stroke="#ecd1b0" stroke-width=".65"/><path d="m125 126 26 49-26 49-26-49Z" fill="none" stroke="#ecd1b0" stroke-width="1"/></svg>
+<?php }
 function product_visual(array $p,int $index=0,bool $deck=false): void {
  if($p['image']){echo '<img class="product-image" src="'.h($p['image']).'" alt="'.h($p['name']).'" loading="lazy" width="600" height="500">';return;}
  $kind=['cups'=>'cups','rope'=>'rope','prisma'=>'light','ghost'=>'blank','bwave'=>'packet'][$p['id']]??'cards';
  $suits=['spades','hearts','clubs','diamonds'];
  ?>
 <div class="product-scene scene-<?=h($kind)?> tone-<?=$index%4?> <?=$deck?'deck-scene':''?>" aria-hidden="true"><span class="scene-shadow"></span>
-<?php if($kind==='cups'): ?><svg class="cups-art" viewBox="0 0 400 300" fill="none"><g stroke="#6f6a61" stroke-width="2"><?php foreach([[90,139],[200,100],[305,145]] as [$x,$y]): ?><path d="M<?=$x-31?> <?=$y?>L<?=$x-44?> <?=$y+91?>Q<?=$x?> <?=$y+109?> <?=$x+44?> <?=$y+91?>L<?=$x+31?> <?=$y?>" fill="#d8d4c9"/><ellipse cx="<?=$x?>" cy="<?=$y?>" rx="31" ry="9" fill="#ebe7dc"/><path d="M<?=$x-42?> <?=$y+86?>Q<?=$x?> <?=$y+101?> <?=$x+42?> <?=$y+86?>"/></g><g stroke="#6f6a61" stroke-width="2"><?php endforeach; ?></g><circle cx="131" cy="246" r="15" fill="#af2433"/></svg>
+<?php if($kind==='cups'): ?><img class="prop-photo" src="/images/still-life.png" alt="" loading="lazy" width="1536" height="1024">
 <?php elseif($kind==='rope'): ?>
 <svg class="rope-art" viewBox="0 0 400 300" fill="none"><path d="M70 210C40 90 128 45 217 71S329 208 249 232 118 181 145 129 284 126 267 196 174 252 127 213" stroke="#958163" stroke-width="17" stroke-linecap="round"/><path d="M70 210C40 90 128 45 217 71S329 208 249 232 118 181 145 129 284 126 267 196 174 252 127 213" stroke="#faf0d4" stroke-width="13" stroke-linecap="round"/><path d="M70 210C40 90 128 45 217 71S329 208 249 232 118 181 145 129 284 126 267 196 174 252 127 213" stroke="#d6c5a3" stroke-width="13" stroke-dasharray="1 5"/><path d="m69 211-1 14m60-10 13 12" stroke="#af2433" stroke-width="11" stroke-linecap="round"/></svg>
 <?php elseif($kind==='light'): ?><span class="light-orbit"></span><span class="light-orbit light-orbit-two"></span><span class="light-dot"></span><span class="light-dot light-dot-two"></span>

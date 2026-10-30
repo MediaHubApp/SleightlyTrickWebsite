@@ -21,8 +21,32 @@ try:
         page.get_by_role('tab', name='Collection',exact=True).click()
         expect(page.locator('#product-name')).to_have_value('Invisible Deck')
         page.locator('#product-price').fill('11.50')
+        photo = {'name': 'large-photo.png', 'mimeType': 'image/png', 'buffer': workflow.png_fixture(padding=6_000_000)}
+        page.locator('[data-upload=product]').set_input_files(photo)
+        expect(page.locator('#editor-status')).to_contain_text('Photo uploaded.', timeout=15000)
+        product_photo = page.locator('[data-photo=product]').get_attribute('src')
+        assert product_photo.startswith('/media.php?image=')
         page.get_by_role('button', name='Publish changes',exact=True).click()
         expect(page.locator('#editor-status')).to_contain_text('Your changes are published.')
+        page.reload()
+        page.get_by_role('tab', name='Collection',exact=True).click()
+        expect(page.locator('[data-photo=product]')).to_have_attribute('src',product_photo)
+        page.get_by_role('tab', name='Photos',exact=True).click()
+        uploaded = {}
+        for key in ['heroImage','bannerImage']:
+            page.locator('[data-upload='+key+']').set_input_files(photo)
+            expect(page.locator('#editor-status')).to_contain_text('Photo uploaded.',timeout=15000)
+            uploaded[key] = page.locator('[data-photo='+key+']').get_attribute('src')
+            assert uploaded[key].startswith('/media.php?image=')
+        page.get_by_role('button', name='Publish changes',exact=True).click()
+        expect(page.locator('#editor-status')).to_contain_text('Your changes are published.')
+        public = admin.new_page()
+        public.goto(server.base+'/')
+        expect(public.locator('#magic-grid .product-image').first).to_have_attribute('src',product_photo)
+        expect(public.locator('.hero-image img')).to_have_attribute('src',uploaded['heroImage'])
+        expect(public.locator('.banner-frame img')).to_have_attribute('src',uploaded['bannerImage'])
+        public.wait_for_function('() => document.querySelector(".hero-image img").naturalWidth > 0')
+        public.close()
         page.get_by_role('tab', name='Instruction videos').click()
         page.get_by_role('button', name='+ Add instruction page').click()
         page.get_by_label('Trick / page title').fill('The Secret Deck')
@@ -86,6 +110,6 @@ try:
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth'), 'Mobile admin overflows'
         assert not errors, errors
         browser.close()
-        print('Browser smoke passed: admin create/upload/save/reload, mobile unlock/playback, password revocation, hide/delete, responsive layout; no JavaScript errors.')
+        print('Browser smoke passed: product/opening/banner photos above 5 MB, publication/reload, instruction create/upload/save/reload, mobile unlock/playback, password revocation, hide/delete, responsive layout; no JavaScript errors.')
 finally:
     server.tearDownClass()

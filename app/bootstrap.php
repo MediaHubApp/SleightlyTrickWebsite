@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.5.1';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -92,7 +92,7 @@ function validate_content(mixed $data): array {
  if(!is_array($data))throw new DomainException('Invalid website content.');$clean=[];
  $limits=['eyebrow'=>160,'heroTitle'=>160,'heroAccent'=>160,'heroDescription'=>700,'aboutTitle'=>160,'aboutText'=>1200,'aboutSecond'=>800,'magicTitle'=>160,'magicIntro'=>500,'cardsTitle'=>160,'cardsIntro'=>500,'visitTitle'=>160,'location'=>160,'visitText'=>700,'tradingDays'=>300,'email'=>200,'notice'=>400];
  foreach($limits as $key=>$max){$value=$data[$key]??null;if(!is_string($value)||strlen($value)>$max*4||(!in_array($key,['tradingDays','email','notice'],true)&&!trim($value)))throw new DomainException('Please check the '.$key.' field.');$clean[$key]=trim($value);}
- if($clean['email'])$clean['email']=valid_email($clean['email']);$clean['heroImage']=image_path($data['heroImage']??null,false);$clean['bannerImage']=image_path($data['bannerImage']??null,false);$clean['storyImage']=image_path($data['storyImage']??defaults()['storyImage']);
+ if($clean['email'])$clean['email']=valid_email($clean['email']);$clean['heroImage']=image_path($data['heroImage']??null,false);$clean['bannerImage']=image_path($data['bannerImage']??null,false);
  if(!isset($data['products'])||!is_array($data['products'])||count($data['products'])>100)throw new DomainException('Use no more than 100 products.');$ids=[];$clean['products']=[];
  foreach($data['products'] as $p){if(!is_array($p))throw new DomainException('Invalid product.');$item=[];foreach(['id'=>80,'name'=>100,'description'=>700,'label'=>60] as $k=>$max){$v=$p[$k]??null;if(!is_string($v)||strlen($v)>$max*4||($k!=='label'&&!trim($v)))throw new DomainException('Please check each product name and description.');$item[$k]=trim($v);}
  if(isset($ids[$item['id']]))throw new DomainException('Duplicate product.');$ids[$item['id']]=true;
@@ -102,9 +102,12 @@ function validate_content(mixed $data): array {
 }
 function json_response(array $data,int $status=200): never {http_response_code($status);header('Content-Type: application/json; charset=utf-8');echo safe_json($data);exit;}
 function upload_image(): string {
- $f=$_FILES['file']??null;if(!$f||$f['error']!==UPLOAD_ERR_OK||$f['size']<1||$f['size']>5000000||!is_uploaded_file($f['tmp_name']))throw new DomainException('Please choose a JPG, PNG or WebP image under 5 MB.');
+ $f=$_FILES['file']??null;
+ if($f&&in_array($f['error'],[UPLOAD_ERR_INI_SIZE,UPLOAD_ERR_FORM_SIZE],true))throw new DomainException('Your hosting rejected the image size. Increase upload_max_filesize and post_max_size in Plesk, and check the web-server upload limit.',413);
+ if($f&&$f['error']===UPLOAD_ERR_PARTIAL)throw new DomainException('The photo upload was interrupted. Please try again.');
+ if(!$f||$f['error']!==UPLOAD_ERR_OK||$f['size']<1||!is_uploaded_file($f['tmp_name']))throw new DomainException('Please choose a JPG, PNG or WebP image. If the file did not arrive, check your hosting upload limits and available disk space.');
  $info=@getimagesize($f['tmp_name']);$types=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'];
- if(!$info||!isset($types[$info['mime']])||$info[0]>16000||$info[1]>16000||$info[0]*$info[1]>60000000)throw new DomainException('Please choose a valid JPG, PNG or WebP image with smaller dimensions.');
+ if(!$info||!isset($types[$info['mime']])||$info[0]<1||$info[1]<1)throw new DomainException('Please choose a valid JPG, PNG or WebP image.');
  $dir=storage().'/uploads';if(!is_dir($dir))mkdir($dir,0700,true);$key=bin2hex(random_bytes(16)).'.'.$types[$info['mime']];
  if(!move_uploaded_file($f['tmp_name'],$dir.'/'.$key))throw new RuntimeException('Could not save the image.');chmod($dir.'/'.$key,0600);return '/media.php?image='.$key;
 }

@@ -17,10 +17,23 @@ import unittest
 import urllib.error
 import urllib.parse
 import urllib.request
+import zlib
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
 ROOT = Path(os.environ.get('ST_TEST_SITE_ROOT', SOURCE_ROOT))
 FIXTURES = SOURCE_ROOT / 'tests/fixtures'
+
+def png_fixture(width=2, height=2, padding=0):
+    """A valid lossless PNG, with optional text padding for upload-size tests."""
+    def chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
+    compressor = zlib.compressobj()
+    row = bytes((width + 7) // 8 + 1)  # Filter byte and one-bit grayscale pixels.
+    pixels = b''.join(compressor.compress(row) for _ in range(height)) + compressor.flush()
+    header = struct.pack('>IIBBBBB', width, height, 1, 0, 0, 0, 0)
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header)
+            + (chunk(b'tEXt', b'Padding\0' + b'x' * padding) if padding else b'')
+            + chunk(b'IDAT', pixels) + chunk(b'IEND', b''))
 
 class Client:
     def __init__(self, base):
@@ -114,6 +127,53 @@ class InstructionWorkflow(unittest.TestCase):
         body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: video/mp4\r\n\r\n').encode() + data + f'\r\n--{boundary}--\r\n'.encode()
         code, raw, _ = self.admin.request('/admin/api.php?action=upload-video', body, {'Content-Type': f'multipart/form-data; boundary={boundary}', 'X-CSRF-Token': csrf or self.csrf})
         return code, json.loads(raw)
+
+    def upload_photo(self, data, csrf=None, client=None):
+        boundary = 'PhotoUploadBoundary'
+        body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="photo.png"\r\nContent-Type: image/png\r\n\r\n').encode() + data + f'\r\n--{boundary}--\r\n'.encode()
+        code, raw, _ = (client or self.admin).request('/admin/api.php?action=upload', body, {'Content-Type': f'multipart/form-data; boundary={boundary}', 'X-CSRF-Token': csrf or self.csrf})
+        return code, json.loads(raw)
+
+    def test_photo_uploads_above_former_limits_and_publication(self):
+        uploaded = []
+        for width, height, padding in [(2, 2, 6_000_000), (17001, 1, 0), (1, 17001, 0), (8000, 8001, 0)]:
+            with self.subTest(width=width, height=height, padding=padding):
+                image = png_fixture(width, height, padding)
+                code, result = self.upload_photo(image)
+                self.assertEqual(code, 201, result)
+                url = result['url']
+                uploaded.append(url)
+                code, body, headers = self.customer.request(url)
+                self.assertEqual(code, 200)
+                self.assertEqual(headers['Content-Type'], 'image/png')
+                self.assertEqual(int(headers['Content-Length']), len(image))
+                self.assertEqual(body, image)
+        code, original = self.admin.api('load')
+        self.assertEqual(code, 200)
+        draft = json.loads(json.dumps(original))
+        url = uploaded[0]
+        draft['content']['heroImage'] = url
+        draft['content']['bannerImage'] = url
+        draft['content']['products'][0]['image'] = url
+        self.assertNotIn(url.encode(), self.customer.request('/')[1])
+        code, result = self.admin.api('save', draft, self.csrf)
+        self.assertEqual(code, 200, result)
+        try:
+            self.assertEqual(self.customer.request('/')[1].count(url.encode()), 3)
+            _, reloaded = self.admin.api('load')
+            self.assertEqual(reloaded['content']['heroImage'], url)
+            self.assertEqual(reloaded['content']['bannerImage'], url)
+            self.assertEqual(reloaded['content']['products'][0]['image'], url)
+        finally:
+            code, restored = self.admin.api('save', {'content': original['content'], 'version': result['version']}, self.csrf)
+            self.assertEqual(code, 200, restored)
+
+    def test_photo_upload_validation_and_permissions(self):
+        self.assertEqual(self.upload_photo(b'<?php echo "bad"; ?>')[0], 400)
+        self.assertEqual(self.upload_photo(b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')[0], 400)
+        self.assertEqual(self.upload_photo(b'')[0], 400)
+        self.assertEqual(self.upload_photo(png_fixture(), csrf='wrong')[0], 403)
+        self.assertEqual(self.upload_photo(png_fixture(), client=self.customer)[0], 401)
 
     def test_video_larger_than_previous_limit(self):
         # Stream a valid MP4 plus a standards-compliant padding box, without
