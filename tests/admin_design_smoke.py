@@ -50,7 +50,7 @@ try:
         page.get_by_role('searchbox',name='Find a product',exact=True).fill('no match')
         expect(page.locator('#product-search-empty')).to_be_visible()
         page.get_by_role('searchbox',name='Find a product',exact=True).fill('')
-        expect(page.locator('#product-picker button')).to_have_count(18)
+        expect(page.locator('#product-picker button')).to_have_count(28)
         page.screenshot(path=str(artifacts/'collection-desktop.png'),animations='disabled')
         page.get_by_role('tab',name='Instruction videos',exact=True).click()
         expect(page.locator('#save-dock')).to_be_hidden()

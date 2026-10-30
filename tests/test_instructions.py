@@ -368,6 +368,35 @@ class InstructionWorkflow(unittest.TestCase):
             self.assertEqual(db.execute('SELECT COUNT(*) FROM users').fetchone()[0], 1)
             self.assertNotIn('Printed-Secret', db.execute('SELECT password_hash FROM instructions WHERE id=?', (self.page['id'],)).fetchone()[0])
 
+    def test_catalogue_upgrade_persists_once_without_resetting_edits(self):
+        _, original = self.admin.api('load')
+        legacy = json.loads(json.dumps(original['content']))
+        legacy.pop('catalogueRevision')
+        legacy['products'] = json.loads(subprocess.check_output([os.environ.get('PHP_BIN','php'), '-r', 'echo json_encode(require $argv[1]);', str(ROOT/'app/catalogue-before-price-list.php')], text=True))
+        legacy['products'][0]['image'] = '/images/banner.jpeg'
+        with sqlite3.connect(self.storage/'site.sqlite') as db:
+            db.execute('UPDATE content SET body=?, version=version+1 WHERE id=1',(json.dumps(legacy),))
+        try:
+            code, upgraded = self.admin.api('load')
+            self.assertEqual(code, 200)
+            visible = [p for p in upgraded['content']['products'] if p['visible']]
+            self.assertEqual(len(visible), 28)
+            self.assertEqual(sum(p['category']=='cards' for p in visible), 3)
+            self.assertEqual(upgraded['content']['products'][0]['price'], 12)
+            self.assertEqual(upgraded['content']['products'][0]['image'], '/images/banner.jpeg')
+            upgraded['content']['products'][0]['price'] = 14
+            upgraded['content']['products'] = [p for p in upgraded['content']['products'] if p['id']!='atom-rings']
+            code, saved = self.admin.api('save',upgraded,self.csrf)
+            self.assertEqual(code, 200, saved)
+            _, reloaded = self.admin.api('load')
+            self.assertEqual(reloaded['content']['products'][0]['price'], 14)
+            self.assertNotIn('atom-rings',[p['id'] for p in reloaded['content']['products']])
+            self.assertEqual(self.unlock()[0],200, 'Instruction access must survive a catalogue upgrade')
+        finally:
+            _, current = self.admin.api('load')
+            code, restored = self.admin.api('save',{'content':original['content'],'version':current['version']},self.csrf)
+            self.assertEqual(code,200,restored)
+
     def test_z_rate_limiting(self):
         for _ in range(8):
             self.assertEqual(self.unlock('incorrect')[0], 403)

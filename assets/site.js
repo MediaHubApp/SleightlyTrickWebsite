@@ -52,20 +52,27 @@
     const count = document.querySelector('[data-filter-count="' + grid.id + '"]');
     const empty = document.querySelector('[data-filter-empty="' + grid.id + '"]');
     const clear = document.querySelector('[data-search-clear="' + input.id + '"]');
+    const filters = [...document.querySelectorAll('[data-filter-target="' + grid.id + '"]')];
+    let category = 'all';
     const initial = count?.textContent;
     const normalise = text => text.toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
     function filter() {
       const query = normalise(input.value.trim());
       let visible = 0;
       items.forEach(item => {
-        item.hidden = !normalise(item.textContent).includes(query);
+        item.hidden = (category !== 'all' && item.dataset.category !== category) || !normalise(item.textContent + ' ' + (item.dataset.search || '')).includes(query);
         if (!item.hidden) { visible++; if (query) item.classList.remove('reveal-pending'); }
       });
-      if (count) count.textContent = query ? visible + (visible === 1 ? ' result found' : ' results found') : initial;
+      if (count) count.textContent = query || category !== 'all' ? visible + (visible === 1 ? ' result found' : ' results found') : initial;
       if (empty) empty.hidden = visible !== 0;
       if (clear) clear.hidden = !input.value;
     }
     input.addEventListener('input', filter);
+    filters.forEach(button => button.addEventListener('click', () => {
+      category = button.dataset.categoryFilter;
+      filters.forEach(control => control.setAttribute('aria-pressed', String(control === button)));
+      filter();
+    }));
     clear?.addEventListener('click', () => { input.value = ''; filter(); input.focus(); });
     filter();
   });
@@ -155,7 +162,7 @@
         });
       });
     }, {rootMargin: '-15% 0px -65% 0px', threshold: 0});
-    document.querySelectorAll('#magic, #cards, #visit, .hero, #story, .instruction-callout').forEach(section => sectionObserver.observe(section));
+    document.querySelectorAll('#collection, #visit, .hero, #story, .instruction-callout').forEach(section => sectionObserver.observe(section));
   }
 
   document.querySelectorAll('[data-rail]').forEach(rail => {

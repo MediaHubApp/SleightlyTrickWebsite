@@ -47,9 +47,10 @@ class CardArtwork(unittest.TestCase):
         self.assertEqual(result['heroImage'],'/images/still-life.png')
         self.assertEqual(result['notice'],'Our own trading information.')
         self.assertEqual(result['bannerImage'],'/media.php?image=custom.jpg')
-        self.assertEqual(result['products'],[{'id':'custom','name':'Our own trick'}])
+        self.assertEqual(next(p for p in result['products'] if p['id']=='custom'),{'id':'custom','name':'Our own trick'})
+        self.assertEqual(len(result['products']),29)
         products=json.loads(php("$old=require APP_ROOT.'/app/previous-copy.php'; $old['products'][0]['price']=199.99; $old['products'][1]['description']='Our own description.'; echo json_encode(design_content($old)['products']);"))
-        self.assertEqual(products[0]['price'],199.99)
+        self.assertEqual(products[0]['price'],12)
         self.assertEqual(products[0]['description'],'Reveal a freely named card as the only reversed card in the deck.')
         self.assertEqual(products[1]['description'],'Our own description.')
 

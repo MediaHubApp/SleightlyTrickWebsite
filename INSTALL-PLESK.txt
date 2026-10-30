@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.5.1
+SLEIGHTLY TRICKY — PLESK EDITION 1.7.0
 ====================================
 
 WHAT IS INCLUDED
@@ -53,25 +53,34 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
-Version 1.5.1 keeps the immersive modern layout with layered hero artwork,
-visual product galleries, product-detail dialogs, a swipeable deck collection
-and matching instruction pages. Motion respects reduced-motion settings;
-public content and password forms also work without JavaScript. The gallery
-has button, keyboard and touch controls and never advances automatically.
-Product details now support previous/next browsing and arrow keys. The admin
-portal shares the same typography, burgundy sidebar, cream panels and precise
-card artwork, with live opening previews and a searchable product list. The
-sticky Publish bar appears only for website text, collection and photos.
-Instruction videos and account changes retain their separate save actions.
-Image file-size, width/height and megapixel caps have been removed throughout
-the editor, including product photos, the opening photograph and the banner.
-Private videos also have no application size cap. Hosting settings are
-external to the ZIP: raise the limits above for larger files.
+Version 1.7 brings all products into one collection, with optional type filters
+and search. The separate playing-card gallery is removed. The catalogue follows
+the supplied Price List.docx: 7 trick decks, 13 visual tricks, 5 sets and the
+three Bicycle / Disney / Themed card ranges (28 products in total).
 
-Unchanged stock headings and descriptions are refreshed. Custom text,
-product names, prices, visibility and uploaded photos are preserved. The
-editor shows the refreshed content, which is stored when you next publish.
-The old location-line and short product labels are no longer used.
+The five grouped Sleightly Tricky trick decks are each £12. Each of the nine
+grouped visual tricks is £8. Every item is its own editable product. Existing
+matching products retain their IDs, photos, custom descriptions and visibility;
+the listed names, prices and types update. Common name variations and entries
+you already added under custom IDs are matched. Previous stock products omitted
+from the price list remain in the admin as hidden entries, with their data intact.
+
+KEEP YOUR EXISTING PRIVATE FOLDER IN PLACE. Do not replace it with fresh data or
+put it in GitHub. It contains the saved catalogue, photos, admin accounts,
+instruction pages and passwords. The update was checked against the supplied
+backup and preserved all ten existing product photos, accounts and instruction
+records. The deployment ZIP contains only the site code, artwork and this guide.
+
+After uploading httpdocs, open the admin, review Collection, then click Publish
+changes once. The updated list appears automatically on upgrade; publishing
+stores it. Later price edits, hiding, deleting or adding products will not be
+reset by the original price list. All four product types use the same collection.
+Website text now has a Collection heading and introduction instead of separate
+magic and playing-card sections. Legacy links to #magic and #cards still reach
+the collection. Existing instruction links and passwords continue to work.
+
+Photo and video uploads remain free of application file-size caps; photos also
+have no application width/height or megapixel caps. Hosting limits still apply.
 
 The new hero artwork shows three upside-down magician’s cups, with solid
 bases uppermost. The displayed card illustrations have correct suit colours,
@@ -165,7 +174,8 @@ for high traffic or very large files.
 - Website text: edit headings, paragraphs, trading days and public email.
   The opening preview updates as you type; visitors see changes only after
   you publish. The preview is a compact approximation of the responsive site.
-- Collection: search products and change prices, descriptions and visibility.
+- Collection: search products and edit names, prices, descriptions, photos,
+  visibility and product type (Trick decks, Visual magic, Magic sets, Playing cards).
 - Photos: upload your main photograph, banner and optional product images.
 - Publish changes saves those website changes. Ctrl/Cmd+S also saves the
   active website editor, or the current instruction page when it is open.
@@ -230,11 +240,14 @@ password revocation, protected MP4 streaming/ranges, and input validation.
 Browser validation also covers five viewport widths, collection/library
 search, password visibility, FAQs, keyboard menu access, reduced motion and
 native password submission with JavaScript disabled, product-detail dialogs,
-keyboard focus, gallery controls and pointer-depth motion. Portal checks
+keyboard focus, combined type/search filters and pointer-depth motion. Portal checks
 cover live drafts, publishing, keyboard navigation, responsive tabs, product
 search and mobile sign-out. An actual upload over the previous 200 MB cap
 and its protected byte ranges are tested. Photo checks include files above
 5 MB, dimensions above 16,000 pixels, images above 60 megapixels, publishing
-and saved-photo reloads. Invalid files remain rejected. See README.md.
+and saved-photo reloads. Catalogue checks cover all 28 price-list items,
+shared prices, upgrades with existing photos/custom IDs, one-time publication
+and preservation of later edits and instruction access. Invalid files remain
+rejected. The supplied private-folder backup is excluded from deployment. See README.md.
 The actual Plesk host has not been accessed; verify its SSL, extensions,
 permissions, upload limits and your real videos after deployment.

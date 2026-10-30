@@ -42,7 +42,7 @@ try:
         expect(page.locator('#editor-status')).to_contain_text('Your changes are published.')
         public = admin.new_page()
         public.goto(server.base+'/')
-        expect(public.locator('#magic-grid .product-image').first).to_have_attribute('src',product_photo)
+        expect(public.locator('#collection-grid .product-image').first).to_have_attribute('src',product_photo)
         expect(public.locator('.hero-image img')).to_have_attribute('src',uploaded['heroImage'])
         expect(public.locator('.banner-frame img')).to_have_attribute('src',uploaded['bannerImage'])
         public.wait_for_function('() => document.querySelector(".hero-image img").naturalWidth > 0')

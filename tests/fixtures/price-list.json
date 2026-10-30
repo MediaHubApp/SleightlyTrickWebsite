@@ -1,0 +1,142 @@
+[
+  {
+    "name": "Invisible Deck",
+    "price": 12,
+    "category": "decks"
+  },
+  {
+    "name": "Brainwave Deck",
+    "price": 12,
+    "category": "decks"
+  },
+  {
+    "name": "Mirage Deck",
+    "price": 12,
+    "category": "decks"
+  },
+  {
+    "name": "Stripper Deck",
+    "price": 12,
+    "category": "decks"
+  },
+  {
+    "name": "Cheek to Cheek",
+    "price": 12,
+    "category": "decks"
+  },
+  {
+    "name": "Ghost Deck",
+    "price": 16,
+    "category": "decks"
+  },
+  {
+    "name": "Cardtoon Deck",
+    "price": 18,
+    "category": "decks"
+  },
+  {
+    "name": "Atom Rings",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Cups and Balls",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Dice Bomb",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Hypnotic Choice",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Mental Cube",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Mind Prediction Board",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Professor’s Nightmare",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "UFO",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Vanishing Handkerchief",
+    "price": 8,
+    "category": "magic"
+  },
+  {
+    "name": "Magic Colouring Book",
+    "price": 10,
+    "category": "magic"
+  },
+  {
+    "name": "Dynamic Coins",
+    "price": 16,
+    "category": "magic"
+  },
+  {
+    "name": "Lights from Anywhere",
+    "price": 16,
+    "category": "magic"
+  },
+  {
+    "name": "Haunted Key",
+    "price": 16,
+    "category": "magic"
+  },
+  {
+    "name": "25 Mind Reading Set",
+    "price": 10,
+    "category": "sets"
+  },
+  {
+    "name": "25 Incredible Card Tricks Set",
+    "price": 10,
+    "category": "sets"
+  },
+  {
+    "name": "Sleightly Tricky Card Magician Box",
+    "price": 24,
+    "category": "sets"
+  },
+  {
+    "name": "Sleightly Tricky Bundle",
+    "price": 34,
+    "category": "sets"
+  },
+  {
+    "name": "Ultimate 365 Illusion Set",
+    "price": 30,
+    "category": "sets"
+  },
+  {
+    "name": "Bicycle Cards",
+    "price": 4,
+    "category": "cards"
+  },
+  {
+    "name": "Disney Cards",
+    "price": 8,
+    "category": "cards"
+  },
+  {
+    "name": "Themed Cards",
+    "price": 12,
+    "category": "cards"
+  }
+]

@@ -4,33 +4,42 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
-## The 1.5 storefront and portal
+## The 1.7 combined collection
 
-Version 1.5.1 keeps this design and removes application upload limits for all
-product photos, opening photographs and banners: no file-size, width/height or
-megapixel cap. Private videos also have no application size cap. Hosting upload
-limits, timeouts and available storage still apply. Supported formats remain
-JPG, PNG and WebP for images, and MP4 for uploaded videos.
+One catalogue now holds trick decks, visual magic, magic sets and playing cards.
+The separate playing-card section is gone. Optional type filters and search work
+together, with live result counts and product details that browse the currently
+visible results. All products remain readable without JavaScript.
 
-An immersive, modern interface in burgundy, cream and charcoal: layered hero
-artwork, a floating navigation frame, visual collection routes, dimensional
-product scenes and a swipeable deck gallery. Product details open in native
-keyboard-accessible dialogs with complete descriptions and prices. The
-instruction library, password gate and video player use the same visual system.
-Refined surfaces, layered paper and quieter navigation cues carry through the site.
-Product dialogs now let visitors browse the current collection with previous/next
-buttons or arrow keys, without returning to the grid.
+The catalogue contains the 28 products from the supplied Price List.docx:
+7 trick decks, 13 visual tricks, 5 sets and 3 playing-card ranges. The five grouped
+Sleightly Tricky trick decks are separate £12 products; the nine grouped visual
+tricks are separate £8 products. [Full product and price list](docs/catalogue-price-list.md).
 
-Motion includes staggered scroll reveals, paper/card hover transitions,
-subtle pointer depth on the hero, a reading-progress line and dialog entrance
-animations. Reduced-motion preferences are respected. Nothing scrolls or
-advances automatically, and the public catalogue remains readable without
-JavaScript. There are no decorative section labels or invented purchase links.
+Existing installations apply the list on the first load after upgrading. Matching
+products keep their IDs, uploaded photos, custom descriptions and visibility;
+listed names, prices and product types update to the supplied list. New entries
+are added. Previous stock items omitted from the list stay in the admin as hidden
+products, and unlisted card editions are hidden in favour of the three card ranges.
+Other custom products keep their settings. Common name variations, including Colouring /
+Coloring Book and products already added under custom IDs, are matched.
 
-[![Homepage](docs/redesign/homepage.png)](docs/redesign/homepage-full.png)
+Open the admin, review the collection and **Publish changes** once to store the
+updated catalogue. After that, later edits, hiding, removal and price changes
+remain authoritative; the price list is not reapplied. Existing accounts,
+instruction passwords/videos, uploaded files and custom page content remain in
+the existing private folder. The supplied private-folder backup was checked
+locally; it is never included in this repository or deployment archive.
+
+The accepted burgundy/cream visual style, artwork and motion remain. The catalogue
+uses one four-column desktop grid (two columns on phones), smaller product scenes,
+a shared search/filter bar and matching admin product types. No application
+upload-size or image-dimension caps have been reintroduced.
+
+[![Combined collection](docs/redesign/collection.png)](docs/redesign/homepage-full.png)
 
 [Full homepage](docs/redesign/homepage-full.png) ·
-[Mobile](docs/redesign/mobile.png) ·
+[Mobile collection](docs/redesign/collection-mobile.png) ·
 [Product details](docs/redesign/product-details.png) ·
 [Instruction library](docs/redesign/instruction-library.png).
 
@@ -57,11 +66,10 @@ still life shows only face-down cards. These images are illustrative, not
 photographs of the products for sale. Screenshots use sample instruction pages;
 no demo passwords, customer pages or private videos are included in the ZIP.
 
-Existing accounts, products, prices and private videos remain compatible.
-Unchanged stock copy is refreshed for the new design; custom copy, prices,
-photos and product settings are preserved. Changes are reflected in the
-editor and become stored content when you next publish. The old decorative
-location-line and product-label settings are no longer displayed or edited.
+Unchanged stock headings are refreshed for the combined collection. Custom page
+copy, photos and instruction settings are preserved. The existing magicTitle /
+magicIntro fields now control the collection heading and introduction; old
+cardsTitle / cardsIntro values are retained for compatibility but are not displayed.
 
 ## Download and install
 
@@ -119,7 +127,7 @@ PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/admin_design_smoke.py
 ```
 
-The automated suite has 16 passing tests covering original-site setup/migration,
+The automated suite has 21 passing tests covering original-site setup/migration,
 editing, customer gates, CSRF, rate limiting, expiry, per-page access,
 password replacement, hiding/deleting, private uploads and byte ranges,
 malformed inputs, editor permissions and revocation, exact card pip counts/colours,
@@ -127,7 +135,10 @@ card indices, compatible copy upgrades and a real upload above the former
 200 MB limit with protected streaming beyond that boundary. Image tests cover
 files over the former 5 MB cap, widths/heights over 16,000 pixels, images over
 60 megapixels, published product photos and invalid/unauthorised uploads.
-It uses temporary data.
+Catalogue tests also check the supplied names and prices, grouped pricing, safe
+upgrades, name matching, retained photos/IDs, and preservation of later admin
+edits/removals. HTTP checks cover the first upgrade, publication, reload and
+continued instruction access. All automated tests use temporary data.
 The browser smoke test requires Python Playwright and `/usr/bin/chromium`.
 It exercises product-photo uploads above 5 MB, opening/banner uploads,
 publishing/reloading, admin page creation, real video upload, saved-page reload,
@@ -137,8 +148,8 @@ deleting, responsive layout and JavaScript error checks.
 The design smoke test checks five viewport widths (320–1440px), search,
 password visibility, FAQs, keyboard/menu interactions, JavaScript-disabled
 navigation and native form submission, reduced motion and horizontal overflow.
-It also checks product dialogs, focus wrapping/return, gallery button and keyboard
-controls, mobile product details, pointer-depth animation and cancellation when
+It also checks product dialogs, focus wrapping/return, combined type/search
+filters, mobile product details, pointer-depth animation and cancellation when
 the motion preference changes.
 
 The portal smoke test checks live local previews versus published content,

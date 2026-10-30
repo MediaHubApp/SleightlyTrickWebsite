@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.7.0';
 function config(): array { static $c; return $c ??= require __DIR__.'/config.php'; }
 function defaults(): array { static $c; return $c ??= require __DIR__.'/defaults.php'; }
 function h(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -89,16 +89,16 @@ function image_path(mixed $path,bool $empty=true): string {
  if(!is_string($path)||strlen($path)>250||(!$empty&&!$path)||($path&&!preg_match('~^(/images/[a-zA-Z0-9_.-]+|/media\.php\?image=[a-f0-9]{32}\.(jpg|png|webp))$~D',$path)))throw new DomainException('Please select a valid uploaded image.');return $path;
 }
 function validate_content(mixed $data): array {
- if(!is_array($data))throw new DomainException('Invalid website content.');$clean=[];
+ if(!is_array($data))throw new DomainException('Invalid website content.');$clean=['catalogueRevision'=>($data['catalogueRevision']??'')===CATALOGUE_REVISION?CATALOGUE_REVISION:''];
  $limits=['eyebrow'=>160,'heroTitle'=>160,'heroAccent'=>160,'heroDescription'=>700,'aboutTitle'=>160,'aboutText'=>1200,'aboutSecond'=>800,'magicTitle'=>160,'magicIntro'=>500,'cardsTitle'=>160,'cardsIntro'=>500,'visitTitle'=>160,'location'=>160,'visitText'=>700,'tradingDays'=>300,'email'=>200,'notice'=>400];
  foreach($limits as $key=>$max){$value=$data[$key]??null;if(!is_string($value)||strlen($value)>$max*4||(!in_array($key,['tradingDays','email','notice'],true)&&!trim($value)))throw new DomainException('Please check the '.$key.' field.');$clean[$key]=trim($value);}
  if($clean['email'])$clean['email']=valid_email($clean['email']);$clean['heroImage']=image_path($data['heroImage']??null,false);$clean['bannerImage']=image_path($data['bannerImage']??null,false);
  if(!isset($data['products'])||!is_array($data['products'])||count($data['products'])>100)throw new DomainException('Use no more than 100 products.');$ids=[];$clean['products']=[];
  foreach($data['products'] as $p){if(!is_array($p))throw new DomainException('Invalid product.');$item=[];foreach(['id'=>80,'name'=>100,'description'=>700,'label'=>60] as $k=>$max){$v=$p[$k]??null;if(!is_string($v)||strlen($v)>$max*4||($k!=='label'&&!trim($v)))throw new DomainException('Please check each product name and description.');$item[$k]=trim($v);}
  if(isset($ids[$item['id']]))throw new DomainException('Duplicate product.');$ids[$item['id']]=true;
- if(!in_array($p['category']??null,['magic','cards'],true)||!is_bool($p['visible']??null)||!is_numeric($p['price']??null)||!is_finite((float)$p['price'])||$p['price']<0||$p['price']>10000)throw new DomainException('Please check the product price and collection.');
+ if(!in_array($p['category']??null,['decks','magic','sets','cards'],true)||!is_bool($p['visible']??null)||!is_numeric($p['price']??null)||!is_finite((float)$p['price'])||$p['price']<0||$p['price']>10000)throw new DomainException('Please check the product price and collection.');
  $item['category']=$p['category'];$item['visible']=$p['visible'];$item['price']=round((float)$p['price'],2);$item['image']=image_path($p['image']??'');$clean['products'][]=$item;}
- return $clean;
+ return upgrade_catalogue($clean);
 }
 function json_response(array $data,int $status=200): never {http_response_code($status);header('Content-Type: application/json; charset=utf-8');echo safe_json($data);exit;}
 function upload_image(): string {
@@ -122,5 +122,6 @@ function auth_page(string $title,string $intro,string $body,?string $error=null)
 }
 
 require_once __DIR__.'/instructions.php';
+require_once __DIR__.'/catalogue.php';
 
 require_once __DIR__.'/view.php';
