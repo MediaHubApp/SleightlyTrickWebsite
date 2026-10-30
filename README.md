@@ -4,6 +4,19 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## Instruction access update
+
+Instruction password entries and newly saved shared passwords are compared in
+lowercase. Existing lowercase instruction password hashes continue to work without
+changing the database. Existing mixed-case passwords must be re-saved through the
+instruction editor once. Admin account passwords remain case-sensitive.
+
+Customer access lasts 15 minutes from a successful unlock. Refreshing a page or
+requesting a private video does not renew the deadline. Old two-hour grants require
+a fresh unlock. The manual lock button has been removed. Preserve the private data
+folder and custom app/config.php when upgrading; no content or styling changes
+are required.
+
 ## The 1.8 linked instruction pages
 
 In **Admin → Instruction videos**, select a **Linked collection product** and
