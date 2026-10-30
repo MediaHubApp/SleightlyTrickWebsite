@@ -4,6 +4,17 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## The 1.9.1 admin layout update
+
+The admin now fills the browser width instead of sitting inside a centred fixed
+maximum width. A narrower sidebar, shorter header and tighter spacing leave more
+room for editing. The instruction editor groups Page details, Video & notes and
+Customer access into columns when the panel has room, and stacks them on smaller
+screens. Its Save/Delete toolbar stays visible while scrolling. Product pickers
+scroll within their panels; website publication controls align with the workspace.
+All six tabs are checked at widths from 320 to 2560 pixels, including the sticky
+instruction Save control. Saved content, passwords and videos are unchanged.
+
 ## The 1.9 instruction access update
 
 Shared trick passwords accept any combination of uppercase and lowercase letters.

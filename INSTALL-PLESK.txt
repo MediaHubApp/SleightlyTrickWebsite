@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.9.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.9.1
 ====================================
 
 WHAT IS INCLUDED
@@ -53,6 +53,14 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
+Version 1.9.1 makes the admin fill the browser window, reduces excess spacing,
+and groups instruction settings into responsive columns. The instruction Save
+and Delete toolbar stays visible while scrolling. All six admin tabs adapt to
+phones, tablets, laptops and wide monitors. Keep your existing private folder
+and any custom app/config.php; no saved pages, passwords or videos are replaced.
+Upload the updated httpdocs files. Refresh the admin after upgrading; the new
+version automatically loads the updated styles and scripts.
+
 Version 1.9 makes shared trick passwords case-insensitive, removes the manual
 Lock this page button, and remembers access with a cookie for a fixed 15 minutes.
 Refreshing or returning within that time does not require the password or extend
