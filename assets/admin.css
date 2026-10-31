@@ -86,3 +86,23 @@
 
 .product-list-panel>.button,.product-list-panel>.picker-search,.product-list-panel>.picker-empty{flex-shrink:0}
 @media(min-width:701px) and (max-width:1000px){.product-list-panel{max-height:calc(100dvh - 460px);min-height:180px}}
+
+/* Contact form settings and preview publish independently of website text. */
+#contact-builder-inputs{border:0;padding:0;margin:0;min-width:0}
+.contact-builder-toolbar{position:sticky;top:var(--portal-header-height);z-index:30;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;margin-bottom:20px;border:1px solid #e3dbcf;border-radius:14px;background:var(--white);box-shadow:var(--portal-shadow)}
+.contact-builder-toolbar strong{font-size:16px;font-weight:600}
+.contact-builder-toolbar .admin-help{display:block;margin:2px 0 0}
+.contact-builder-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.contact-builder-layout{display:grid;grid-template-columns:248px minmax(0,1fr);gap:20px;align-items:start}
+.contact-builder-layout>.product-list-panel{top:calc(var(--portal-header-height) + 110px);max-height:calc(100dvh - var(--portal-header-height) - 300px)}
+.contact-builder-layout>.product-list-panel>.field{flex-shrink:0;margin-bottom:12px}
+.contact-builder-panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;min-width:0}
+.contact-field-actions{display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid #e7ddd1;padding-top:20px;margin-top:22px}
+#contact-reply-help{margin:0 0 20px}
+.contact-builder-preview h2{margin-bottom:12px}
+.contact-builder-preview .panel-intro{font-size:12px;margin-bottom:20px}
+.contact-builder-preview .contact-field textarea{min-height:90px}
+.contact-builder-preview .contact-field:last-child{margin-bottom:0}
+.contact-builder-preview .contact-field :disabled{opacity:1;color:#81776e;background:#faf6ef}
+@media(max-width:1350px){.contact-builder-layout{grid-template-columns:220px minmax(0,1fr);gap:18px}.contact-builder-panels{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.contact-builder-toolbar{padding:14px;flex-wrap:wrap;gap:12px}.contact-builder-actions{width:100%;justify-content:stretch}.contact-builder-actions>*{flex:1}.contact-builder-actions .button{padding-inline:12px;font-size:12px}.contact-builder-layout{grid-template-columns:minmax(0,1fr);gap:18px}.contact-builder-layout>.product-list-panel{position:static;max-height:none}.contact-field-actions .small-button{flex:1;padding-inline:8px}}

@@ -4,6 +4,25 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## The 1.11 contact form editor
+
+Open **Admin → Contact form** to add, remove, reorder or relabel fields, set which
+answers are required, and edit dropdown options (one per line). Supported types
+are short text, long message, email, phone, dropdown and checkbox. Up to 15 fields
+and 30 options per dropdown are supported. The reply email field stays required;
+its label and position can change. All other default fields can be removed.
+
+A live preview shows draft changes. **Save contact form** publishes them immediately;
+Ctrl/Cmd+S also saves the active form editor. This save is separate from website
+publication and instruction pages, with version checks for concurrent editors.
+Forms already open in a visitor's browser ask them to review an updated form while
+preserving answers to fields that still exist. Added fields are validated on the
+server and included in the enquiry email; removed and unknown fields are ignored.
+
+The schema is kept in the existing private database. Existing sites begin with
+the same default fields and options, and your private Plesk mail configuration
+continues to work. Mail sender and recipient settings remain in the private file.
+
 ## The 1.10 contact form
 
 Customers can contact the stall through **Contact** in the navigation, footer or
@@ -194,6 +213,7 @@ Use that path in place of `php` in the commands above.
 PHP_BIN=/workspace/.runtime/bin/php python3 -m unittest discover -s tests -v
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/browser_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/contact_browser_smoke.py
+PHP_BIN=/workspace/.runtime/bin/php python3 tests/contact_admin_browser_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/admin_design_smoke.py
 ```

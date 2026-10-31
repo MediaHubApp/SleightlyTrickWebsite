@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.10.0
+SLEIGHTLY TRICKY — PLESK EDITION 1.11.0
 ====================================
 
 WHAT IS INCLUDED
@@ -55,6 +55,14 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
+Version 1.11 adds Admin > Contact form. Add/remove/reorder fields, choose types,
+set required answers and edit dropdown options, with a live preview. Click Save
+contact form to publish; this is separate from Publish changes. The reply email
+field stays required; its label and position can change. Other fields can be
+removed. The existing form and dropdown options remain until you save changes.
+Keep your existing private folder and contact-mail.php. No mail setup changes
+are needed. The existing private database gains a form-settings table automatically.
+
 Version 1.10 adds a Contact page with a form that delivers enquiries through
 Plesk's local mail service. See the included CONTACT-PLESK.txt for step-by-step
 mailbox, private configuration, mail service, DNS and testing instructions.

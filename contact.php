@@ -1,31 +1,34 @@
 <?php
 require __DIR__.'/app/bootstrap.php';
-require __DIR__.'/app/contact.php';
-$values=['name'=>'','email'=>'','topic'=>'General enquiry','message'=>''];$errors=[];$error=null;$settings=null;$sent=false;
+require_once __DIR__.'/app/contact.php';
+$definition=['fields'=>contact_default_fields(),'version'=>0];$values=contact_values([],$definition['fields']);$errors=[];$error=null;$settings=null;$sent=false;
 $c=content(true)['content'];
 try{
  session_boot();
  if(!in_array($_SERVER['REQUEST_METHOD'],['GET','POST'],true)){header('Allow: GET, POST');http_response_code(405);exit;}
+ $definition=contact_form_definition();
+ $values=contact_values($_SERVER['REQUEST_METHOD']==='POST'?$_POST:[],$definition['fields']);
  $settings=contact_mail_config();
  if($_SERVER['REQUEST_METHOD']==='POST'){
-  $values=contact_values($_POST);
   $token=$_POST['_csrf']??'';$formId=$_POST['_form_id']??'';
   if(!is_string($token)||!hash_equals(csrf(),$token)||!is_string($formId)||!isset($_SESSION['contact_form_id'])||!hash_equals($_SESSION['contact_form_id'],$formId))throw new DomainException('Your form has expired. Please check your message and send it again.',403);
+  $submittedVersion=$_POST['_form_version']??'0';
+  if(!is_string($submittedVersion)||$submittedVersion!==(string)$definition['version'])throw new DomainException('This form has changed. Please review your message and send it again.',409);
   contact_rate_limit();
   $trap=$_POST['website']??'';
   if(!is_string($trap)||$trap!==''){
    unset($_SESSION['contact_form_id']);$_SESSION['contact_sent']=true;header('Location: /contact.php',true,303);exit;
   }
-  $errors=contact_errors($values);
+  $errors=contact_errors($values,$definition['fields']);
   if($errors)http_response_code(400);
  }
  if($_SERVER['REQUEST_METHOD']==='POST'&&!$errors){
-  if(!$settings||!function_exists('mail')||!contact_send($settings,$values))throw new RuntimeException('Mail handoff unavailable.');
+  if(!$settings||!function_exists('mail')||!contact_send($settings,$values,$definition['fields']))throw new RuntimeException('Mail handoff unavailable.');
   unset($_SESSION['contact_form_id']);$_SESSION['contact_sent']=true;
   header('Location: /contact.php',true,303);exit;
  }
  $sent=!empty($_SESSION['contact_sent']);unset($_SESSION['contact_sent']);
-}catch(DomainException $e){http_response_code(in_array($e->getCode(),[403,429],true)?$e->getCode():400);$error=$e->getMessage();}
+}catch(DomainException $e){http_response_code(in_array($e->getCode(),[403,409,429],true)?$e->getCode():400);$error=$e->getMessage();}
 catch(Throwable $e){error_log('Contact form: mail configuration or handoff unavailable.');http_response_code(503);$error='We couldn’t send your message just now. Please try again later, or contact us at the stall.';}
 if(session_status()===PHP_SESSION_ACTIVE&&!isset($_SESSION['contact_form_id']))$_SESSION['contact_form_id']=bin2hex(random_bytes(24));
 $ready=$settings!==null&&function_exists('mail');
@@ -43,10 +46,16 @@ function contact_field_attributes(string $key,array $errors): string {return iss
 <?php if($error): ?><p class="contact-feedback" role="alert"><?=h($error)?></p><?php elseif(!$ready): ?><p class="contact-feedback" role="status">The contact form is temporarily unavailable. Please try again later or come and see us at the stall.</p><?php endif; ?>
 <?php if($errors): ?><div class="contact-feedback" role="alert"><p>Please check the highlighted fields.</p><ul><?php foreach($errors as $key=>$message): ?><li><a href="#contact-<?=h($key)?>"><?=h($message)?></a></li><?php endforeach; ?></ul></div><?php endif; ?>
 <form method="post" action="/contact.php" class="contact-form">
-<input type="hidden" name="_csrf" value="<?=h($_SESSION['csrf']??'')?>"><input type="hidden" name="_form_id" value="<?=h($_SESSION['contact_form_id']??'')?>">
+<input type="hidden" name="_csrf" value="<?=h($_SESSION['csrf']??'')?>"><input type="hidden" name="_form_id" value="<?=h($_SESSION['contact_form_id']??'')?>"><input type="hidden" name="_form_version" value="<?=$definition['version']?>">
 <div class="contact-trap" aria-hidden="true"><label for="contact-website">Leave this field blank</label><input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
-<div class="contact-field-pair"><label class="contact-field" for="contact-name"><span>Your name</span><input id="contact-name" name="name" autocomplete="name" maxlength="100" required value="<?=h($values['name'])?>"<?=contact_field_attributes('name',$errors)?>><?php contact_field_error('name',$errors); ?></label><label class="contact-field" for="contact-email"><span>Email address</span><input type="email" id="contact-email" name="email" autocomplete="email" maxlength="254" required value="<?=h($values['email'])?>"<?=contact_field_attributes('email',$errors)?>><?php contact_field_error('email',$errors); ?></label></div>
-<label class="contact-field" for="contact-topic"><span id="contact-topic-label">What’s it about?</span><select id="contact-topic" name="topic" aria-labelledby="contact-topic-label" required<?=contact_field_attributes('topic',$errors)?>><?php foreach(CONTACT_TOPICS as $topic): ?><option<?=$values['topic']===$topic?' selected':''?>><?=h($topic)?></option><?php endforeach; ?></select><?php contact_field_error('topic',$errors); ?></label>
-<label class="contact-field" for="contact-message"><span>Your message</span><textarea id="contact-message" name="message" rows="6" maxlength="5000" required<?=contact_field_attributes('message',$errors)?>><?=h($values['message'])?></textarea><?php contact_field_error('message',$errors); ?></label>
-<p class="contact-privacy">We’ll use your name, email address and message to respond to your enquiry.</p><button class="button red" type="submit"<?=!$ready?' disabled':''?>>Send message <?=icon('arrow')?></button>
+<div class="contact-field-pair">
+<?php foreach($definition['fields'] as $field): $id=$field['id'];$value=$values[$id]??'';$type=$field['type'];$required=$field['required']?' required':''; ?>
+<label class="contact-field <?=in_array($type,['textarea','select','checkbox'],true)?'contact-field-wide':''?> <?=$type==='checkbox'?'contact-checkbox':''?>" for="contact-<?=h($id)?>"><span id="contact-<?=h($id)?>-label"><?=h($field['label'])?><?=$field['required']?'':' (optional)'?></span>
+<?php if($type==='textarea'): ?><textarea id="contact-<?=h($id)?>" name="<?=h($id)?>" aria-labelledby="contact-<?=h($id)?>-label" rows="6" maxlength="5000"<?=$required?><?=contact_field_attributes($id,$errors)?>><?=h($value)?></textarea>
+<?php elseif($type==='select'): ?><select id="contact-<?=h($id)?>" name="<?=h($id)?>" aria-labelledby="contact-<?=h($id)?>-label"<?=$required?><?=contact_field_attributes($id,$errors)?>><option value="">Choose an option</option><?php foreach($field['options'] as $option): ?><option value="<?=h($option)?>"<?=$value===$option?' selected':''?>><?=h($option)?></option><?php endforeach; ?></select>
+<?php elseif($type==='checkbox'): ?><input type="checkbox" id="contact-<?=h($id)?>" name="<?=h($id)?>" aria-labelledby="contact-<?=h($id)?>-label" value="yes"<?=$value==='yes'?' checked':''?><?=$required?><?=contact_field_attributes($id,$errors)?>>
+<?php else: ?><input type="<?=h($type)?>" id="contact-<?=h($id)?>" name="<?=h($id)?>" aria-labelledby="contact-<?=h($id)?>-label" maxlength="<?=$type==='email'?254:($type==='tel'?40:100)?>" autocomplete="<?=$id==='email'?'email':($id==='name'?'name':($type==='tel'?'tel':'off'))?>"<?=$required?> value="<?=h($value)?>"<?=contact_field_attributes($id,$errors)?>><?php endif; ?>
+<?php contact_field_error($id,$errors); ?></label>
+<?php endforeach; ?></div>
+<p class="contact-privacy">We’ll use the details you provide to respond to your enquiry.</p><button class="button red" type="submit"<?=!$ready?' disabled':''?>>Send message <?=icon('arrow')?></button>
 </form><?php endif; ?></section></main><?php site_footer(); ?></body></html>

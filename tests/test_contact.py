@@ -54,6 +54,12 @@ path.write_text(json.dumps(messages))
                     raise AssertionError('PHP contact server exited')
                 time.sleep(.05)
 
+        cls.admin = workflow.Client(cls.base)
+        token = cls.admin.token('/setup.php')
+        code, body, _ = cls.admin.form('/setup.php', {'_csrf':token,'setup_key':(cls.storage/'setup-key.txt').read_text().strip(),'email':'owner@example.test','password':'Contact owner password 123','confirm':'Contact owner password 123'})
+        assert code == 200 and b'editor-data' in body
+        cls.csrf = json.loads(re.search(rb'id="editor-data">(.*?)</script>', body, re.S)[1])['csrf']
+
     @classmethod
     def write_config(cls, sender='contact@example.test', recipient='enquiries@example.test'):
         (cls.storage / 'contact-mail.php').write_text("<?php return ['to'=>" + json.dumps(recipient) + ",'from'=>" + json.dumps(sender) + '];')
@@ -77,11 +83,13 @@ path.write_text(json.dumps(messages))
         self.failure.unlink(missing_ok=True)
         self.clear_attempts()
         self.customer = workflow.Client(self.base)
+        with sqlite3.connect(self.storage/'site.sqlite') as db:
+            db.execute('DELETE FROM contact_form')
 
     def payload(self, **changes):
         code, body, _ = self.customer.request('/contact.php')
         self.assertEqual(code, 200)
-        tokens = {key:re.search(('name="' + key + '" value="([a-f0-9]+)"').encode(), body)[1].decode() for key in ['_csrf','_form_id']}
+        tokens = {key:re.search(('name="' + key + '" value="([a-f0-9]+)"').encode(), body)[1].decode() for key in ['_csrf','_form_id','_form_version']}
         return {**tokens, 'name':'Alex Example','email':'visitor@example.test','topic':'Product question','message':'Do you have this deck in stock?','website':'', **changes}
 
     def messages(self):
@@ -192,6 +200,107 @@ path.write_text(json.dumps(messages))
             self.assertEqual(code, 503)
             self.assertNotIn(sender.encode(), body)
             self.assertEqual(self.messages(), [])
+
+    def definition(self):
+        code, result = self.admin.api('contact-form')
+        self.assertEqual(code, 200, result)
+        return result
+
+    def save_definition(self, definition):
+        code, result = self.admin.api('save-contact-form', definition, self.csrf)
+        self.assertEqual(code, 200, result)
+        return result
+
+    def test_builder_add_remove_reorder_dropdown_validation_and_delivery(self):
+        original = self.definition()
+        self.assertEqual(original['version'], 0)
+        schema = json.loads(json.dumps(original))
+        schema['fields'] = [f for f in schema['fields'] if f['id'] not in ['name','message']]
+        schema['fields'][1]['options'] += ['Wholesale & trade', 'Événement']
+        schema['fields'].insert(0, {'id':'telephone','label':'Telephone','type':'tel','required':True,'options':[]})
+        schema['fields'].append({'id':'details','label':'More details <optional>','type':'textarea','required':False,'options':[]})
+        schema['fields'].append({'id':'updates','label':'Please call me','type':'checkbox','required':False,'options':[]})
+        # Edits are local until saved.
+        self.assertEqual(self.definition(), original)
+        config_before = (self.storage/'contact-mail.php').read_bytes()
+        saved = self.save_definition(schema)
+        self.assertEqual(saved['version'], 1)
+        self.assertEqual(self.definition(), saved)
+        self.assertEqual((self.storage/'contact-mail.php').read_bytes(), config_before)
+        body = self.customer.request('/contact.php')[1]
+        self.assertNotIn(b'name="name"', body)
+        self.assertNotIn(b'name="message"', body)
+        self.assertIn(b'Wholesale &amp; trade', body)
+        self.assertIn(b'More details &lt;optional&gt;', body)
+        self.assertLess(body.index(b'id="contact-telephone"'), body.index(b'id="contact-email"'))
+        payload = self.payload(telephone='', topic='Wholesale & trade')
+        self.assertEqual(self.customer.form('/contact.php', payload)[0], 400)
+        payload['telephone'] = '+44 (0)1234 567890'
+        payload['topic'] = 'Unconfigured option'
+        self.assertEqual(self.customer.form('/contact.php', payload)[0], 400)
+        payload.update(topic='Événement', details='A custom enquiry', updates='yes', name='REMOVED FIELD MUST BE IGNORED')
+        code, body, _ = self.customer.form('/contact.php', payload)
+        self.assertEqual(code, 200)
+        message = BytesParser(policy=policy.default).parsebytes(self.messages()[0]['message'].encode())
+        self.assertEqual(message['Reply-To'], payload['email'])
+        self.assertIn('Telephone:\n'+payload['telephone'], message.get_content())
+        self.assertIn('More details <optional>:\nA custom enquiry', message.get_content())
+        self.assertIn('Please call me:\nYes', message.get_content())
+        self.assertIn('Événement', message.get_content())
+        self.assertNotIn('REMOVED FIELD MUST BE IGNORED', message.get_content())
+
+    def test_builder_authorization_and_stale_edits(self):
+        schema = self.definition()
+        self.assertEqual(self.customer.api('contact-form')[0], 401)
+        self.assertEqual(self.customer.api('save-contact-form', schema)[0], 401)
+        self.assertEqual(self.admin.api('save-contact-form', schema, 'wrong')[0], 403)
+        self.save_definition(schema)
+        self.assertEqual(self.admin.api('save-contact-form', schema, self.csrf)[0], 409)
+        # Publishing website text does not overwrite the separately saved form.
+        current = self.definition()
+        _, content = self.admin.api('load')
+        self.assertEqual(self.admin.api('save', content, self.csrf)[0], 200)
+        self.assertEqual(self.definition(), current)
+        self.assertEqual(self.admin.api('add-user', {'email':'contact-editor@example.test','password':'Contact editor password 123'}, self.csrf)[0], 201)
+        editor = workflow.Client(self.base)
+        code, body, _ = editor.form('/admin/login.php', {'_csrf':editor.token('/admin/login.php'),'email':'contact-editor@example.test','password':'Contact editor password 123'})
+        self.assertEqual(code, 200)
+        editor_csrf = json.loads(re.search(rb'id="editor-data">(.*?)</script>',body,re.S)[1])['csrf']
+        self.assertEqual(editor.api('contact-form')[0], 200)
+        self.assertEqual(editor.api('save-contact-form', current, editor_csrf)[0], 200)
+        # Only form definitions are exposed: private delivery settings never enter the API.
+        self.assertNotIn('enquiries@example.test', json.dumps(editor.api('contact-form')[1]))
+        _, users = self.admin.api('users')
+        uid = next(user['id'] for user in users['users'] if user['email']=='contact-editor@example.test')
+        self.assertEqual(self.admin.api('remove-user', {'id':uid}, self.csrf)[0], 200)
+
+    def test_builder_rejects_invalid_definitions_without_changing_the_form(self):
+        original = self.definition()
+        invalid = []
+        for changes in [{'id':'website'}, {'id':'_csrf'}, {'id':'email'}, {'type':'file'}, {'label':'Bad\nlabel'}, {'required':'yes'}]:
+            schema = json.loads(json.dumps(original))
+            schema['fields'][0].update(changes)
+            invalid.append(schema)
+        for changes in [{'options':[]},{'options':['Duplicate','Duplicate']},{'options':['Bad\r\nBcc: attack@example.test']},{'options':['x'*81]}]:
+            schema = json.loads(json.dumps(original));schema['fields'][2].update(changes);invalid.append(schema)
+        schema = json.loads(json.dumps(original));schema['fields'][1]['required']=False;invalid.append(schema)
+        schema = json.loads(json.dumps(original));schema['fields'].pop(1);invalid.append(schema)
+        schema = json.loads(json.dumps(original));schema['fields'] += [{'id':'extra_'+str(i),'label':'Extra','type':'text','required':False,'options':[]} for i in range(12)];invalid.append(schema)
+        for schema in invalid:
+            with self.subTest(schema=schema):
+                self.assertEqual(self.admin.api('save-contact-form', schema, self.csrf)[0], 400)
+                self.assertEqual(self.definition(), original)
+
+    def test_public_form_changed_while_open(self):
+        payload = self.payload(message='Keep my message after a form update.')
+        schema = self.definition()
+        schema['fields'][2]['options'].append('New topic')
+        self.save_definition(schema)
+        code, body, _ = self.customer.form('/contact.php', payload)
+        self.assertEqual(code, 409)
+        self.assertIn(b'This form has changed.', body)
+        self.assertIn(payload['message'].encode(), body)
+        self.assertEqual(self.messages(), [])
 
 
 if __name__ == '__main__':

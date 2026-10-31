@@ -94,3 +94,8 @@
 @media(max-width:960px){.contact-main{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:35px;padding-top:40px}.contact-intro h1{font-size:64px}.contact-intro>p{font-size:14px}.contact-card{padding:25px}.contact-card h2{font-size:29px}.contact-art{width:90px}}
 @media(max-width:700px){.contact-main{grid-template-columns:minmax(0,1fr);gap:30px;padding-block:25px 75px}.contact-intro{padding-top:0}.contact-intro h1{font-size:58px}.contact-intro h1 br{display:none}.contact-intro>p{max-width:none;font-size:14px;margin-top:20px}.contact-visit{margin-top:22px;padding-top:20px;max-width:none}.contact-visit h2{font-size:22px;margin-bottom:10px}.contact-visit .text-link{margin-top:12px}.contact-art{display:none}.contact-direct{font-size:13px;margin-top:16px}.contact-card{padding:25px 22px;border-radius:16px}.contact-card h2{font-size:29px}.contact-card-intro{font-size:13px}.contact-form{margin-top:24px}.contact-field{margin-bottom:19px}.contact-form>.button{width:100%}.contact-privacy{font-size:11px}.visit-message{margin:18px 0 0;display:flex;width:fit-content}.contact-feedback{font-size:12px;padding:13px 15px}}
 @media(max-width:360px){.contact-intro h1{font-size:50px}.contact-card{padding:23px 18px}.contact-card h2{font-size:27px}}
+.contact-field-wide{grid-column:1/-1}
+.contact-checkbox{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px 12px;align-items:start}
+.contact-checkbox>span:first-child{grid-column:2;grid-row:1}
+.contact-checkbox>input{grid-column:1;grid-row:1;width:18px;height:18px;min-height:0;margin-top:2px;accent-color:var(--wine)}
+.contact-checkbox>.contact-field-error{grid-column:2}

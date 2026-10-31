@@ -74,7 +74,7 @@ try:
         # Every portal tab must fit phones, tablets, laptops and wide displays.
         for width in [320,390,768,1024,1440,1920,2560]:
             page.set_viewport_size({'width':width,'height':900})
-            for tab in ['Website text','Collection','Instruction videos','Photos','Editor access','My account']:
+            for tab in ['Website text','Collection','Instruction videos','Contact form','Photos','Editor access','My account']:
                 page.get_by_role('tab',name=tab,exact=True).click()
                 page.evaluate('document.fonts.ready')
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'),f'Overflow at {width}px {tab}'
@@ -127,6 +127,6 @@ try:
         assert view.locator('#panel-products').evaluate('el=>getComputedStyle(el).animationName')=='none'
         assert not errors,errors
         browser.close()
-    print('Portal checks passed: live draft preview, explicit publishing, keyboard save/navigation, product search, all six tabs at seven widths, full-width layout and sticky instruction Save, mobile sign-out and reduced motion; no JavaScript errors.')
+    print('Portal checks passed: live draft preview, explicit publishing, keyboard save/navigation, product search, all seven tabs at seven widths, full-width layout and sticky instruction Save, mobile sign-out and reduced motion; no JavaScript errors.')
 finally:
     server.tearDownClass()

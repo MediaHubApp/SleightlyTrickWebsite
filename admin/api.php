@@ -3,6 +3,7 @@ require dirname(__DIR__).'/app/bootstrap.php';
 try{
  session_boot();$u=require_user(true);$action=$_GET['action']??'';$method=$_SERVER['REQUEST_METHOD'];
  if($method==='GET'&&$action==='load')json_response(content());
+ if($method==='GET'&&$action==='contact-form')json_response(contact_form_definition());
  if($method==='GET'&&$action==='instructions')json_response(['instructions'=>array_map('instruction_admin',db()->query('SELECT * FROM instructions ORDER BY title COLLATE NOCASE')->fetchAll())]);
  if($method==='GET'&&$action==='users'){require_owner($u);json_response(['users'=>db()->query('SELECT id,email,role FROM users ORDER BY id')->fetchAll()]);}
  if($method!=='POST')throw new DomainException('This action requires a POST request.',405);
@@ -12,6 +13,7 @@ try{
  $raw=file_get_contents('php://input',false,null,0,500001);if(strlen($raw)>500000)throw new DomainException('This update is too large.',413);
  try{$data=json_decode($raw,true,512,JSON_THROW_ON_ERROR);}catch(JsonException $e){throw new DomainException('Invalid request.',400);}if(!is_array($data))throw new DomainException('Invalid request.');
  if($action==='save-instruction')json_response(['instruction'=>save_instruction($data)]);
+ if($action==='save-contact-form')json_response(save_contact_form($data));
  if($action==='delete-instruction'){
   if(!is_string($data['id']??null)||!is_int($data['version']??null))throw new DomainException('Invalid instruction page.');
   $q=db()->prepare('DELETE FROM instructions WHERE id=? AND version=?');$q->execute([$data['id'],$data['version']]);

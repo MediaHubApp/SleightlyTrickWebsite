@@ -139,7 +139,7 @@ must be tested on YOUR Plesk server after this setup.
 The form has a hidden spam field, session validation and a limit of five
 submissions per IP address every 15 minutes, including invalid form submissions.
 After repeated tests, wait 15 minutes if the rate-limit message appears. Visitors
-can submit without JavaScript. Name, email, topic and message are required.
+can submit without JavaScript. The default fields are name, email, topic and message; these begin as required.
 
 7. IF SOMETHING DOES NOT WORK
 
@@ -174,3 +174,37 @@ Your form has expired:
 Messages are handled in your chosen mailbox. Set your own access and retention
 rules there. The form only uses its private rate-limit data for abuse prevention;
 message contents are not saved to site.sqlite or the site's application logs.
+
+
+8. MANAGE FIELDS IN THE ADMIN PANEL (VERSION 1.11+)
+
+Sign in to the stallholder admin and open Contact form. Select a field from the
+list to change its label, type or Required field setting. To edit a dropdown,
+select it and put one option on each line of Dropdown options. You can add,
+remove, edit and reorder those lines (up to 30 options).
+
+Choose a type under Add a field, then click + Add field. Supported types are
+Short text, Long message, Email address, Phone number, Dropdown and Checkbox.
+You can have up to 15 fields. Use Move up / Move down to change a field's position
+or Remove field to delete it from the draft. The reply email field stays a
+required Email address so replies work. You can relabel it or move it, and every
+other field may be removed. Extra email fields do not change the Reply-To address.
+
+The Form preview updates as you edit. These are draft changes until you click
+Save contact form, which makes the whole form live immediately. Ctrl/Cmd+S also
+saves while this tab is active. The website's separate Publish changes button
+does not save or overwrite these form settings. Reloading without saving discards
+the draft. Another editor's changes are protected by a version check; reload if
+the form was saved elsewhere before you publish.
+
+Custom answers appear in enquiry emails under the field labels you chose. The
+server checks required answers, dropdown choices and field lengths. Removed or
+unrecognised fields cannot add extra email content. If the form changes while a
+visitor is filling it in, they are asked to review the updated form before sending;
+answers for fields that still exist are kept. Rate limits and spam controls remain.
+
+Form settings are stored in your existing private site.sqlite, independently of
+website text. This does not store customer submissions. Keep this private folder
+when upgrading. Your contact-mail.php sender/recipient configuration and Plesk
+mail service settings remain as set up earlier; the form editor does not expose
+or modify them. No new mail setup is needed for an already working contact form.
