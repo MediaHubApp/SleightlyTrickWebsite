@@ -1,4 +1,4 @@
-SLEIGHTLY TRICKY — PLESK EDITION 1.9.1
+SLEIGHTLY TRICKY — PLESK EDITION 1.10.0
 ====================================
 
 WHAT IS INCLUDED
@@ -12,6 +12,8 @@ external database, or third-party login service.
 
 REQUIREMENTS
 - PHP 8.2 or later, with PDO, pdo_sqlite, fileinfo, JSON and sessions enabled.
+- For the contact form: PHP mail() enabled and a working local Plesk mail service.
+  Follow CONTACT-PLESK.txt before enabling delivery.
 - HTTPS with a valid SSL certificate and a permanent HTTP-to-HTTPS redirect.
 - PHP must be able to create a private directory alongside httpdocs.
 - Images and private videos have NO application file-size cap. Images also
@@ -53,6 +55,14 @@ uploaded ZIP after extraction. The deployment ZIP contains no live accounts,
 shared passwords, database, uploaded videos, or customer sessions.
 
 EXISTING SITE UPGRADE
+Version 1.10 adds a Contact page with a form that delivers enquiries through
+Plesk's local mail service. See the included CONTACT-PLESK.txt for step-by-step
+mailbox, private configuration, mail service, DNS and testing instructions.
+Copy CONTACT-MAIL.example.php to your existing private/sleightly-tricky directory,
+rename it contact-mail.php and set your real recipient/sender addresses there.
+Keep that live configuration outside httpdocs. No webmail password is needed.
+The form stays unavailable until configured; all existing private data remains.
+
 Version 1.9.1 makes the admin fill the browser window, reduces excess spacing,
 and groups instruction settings into responsive columns. The instruction Save
 and Delete toolbar stays visible while scrolling. All six admin tabs adapt to

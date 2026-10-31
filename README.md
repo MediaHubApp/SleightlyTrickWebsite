@@ -4,6 +4,28 @@ PHP website for Sleightly Tricky, including its stallholder editor and
 password-protected customer instruction videos. This project is independent
 of MediaHub; the GitHub organisation name is just where it is stored.
 
+## The 1.10 contact form
+
+Customers can contact the stall through **Contact** in the navigation, footer or
+Visit section. The page matches the existing site and works without JavaScript.
+It collects a name, reply email, topic and message, with validation, spam trapping,
+rate limits, a confirmation and protection against duplicate submissions.
+
+Follow [CONTACT-PLESK.txt](CONTACT-PLESK.txt) for the complete Plesk setup. The form
+uses PHP `mail()` with the Plesk server's local mail service. Copy
+[CONTACT-MAIL.example.php](CONTACT-MAIL.example.php) to
+`private/sleightly-tricky/contact-mail.php` outside `httpdocs`, then set the fixed
+recipient and sender mailboxes. The sender should belong to your own domain;
+Reply-To is the visitor's validated address. No mailbox password is needed, no
+automatic replies are sent, and messages are not stored in the website database.
+
+Existing private data/configuration stays in place. The form is unavailable until
+configured. Delivery is tested with a local mail capture; send a real test on
+Plesk after setup and verify arrival and Reply-To in your mailbox. Server acceptance
+does not guarantee delivery to the inbox. Configure DKIM/SPF and your mail host's
+settings as explained in the guide. The ZIP includes the guide and example outside
+`httpdocs`; it contains no live delivery settings.
+
 ## The 1.9.1 admin layout update
 
 The admin now fills the browser width instead of sitting inside a centred fixed
@@ -171,6 +193,7 @@ Use that path in place of `php` in the commands above.
 ```sh
 PHP_BIN=/workspace/.runtime/bin/php python3 -m unittest discover -s tests -v
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/browser_smoke.py
+PHP_BIN=/workspace/.runtime/bin/php python3 tests/contact_browser_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/design_smoke.py
 PHP_BIN=/workspace/.runtime/bin/php python3 tests/admin_design_smoke.py
 ```
@@ -215,7 +238,7 @@ Run `PHP_BIN=/workspace/.runtime/bin/php python3 tools/verify-package.py` to
 check explicit ZIP permissions, real unzip extraction, deployment layout,
 and the HTTP suite against the extracted website. Public files are packaged
 as `644` and directories as `755`, independently of local workspace modes.
-The package includes only deployable site files and the Plesk guide; it
+The package includes deployable site files, Plesk guides and the example mail configuration; it
 excludes Git metadata, development tools, tests, private data and credentials.
 
 ## Font licences

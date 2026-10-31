@@ -7,3 +7,6 @@
 .env.*
 __pycache__/
 .DS_Store
+
+# Live contact delivery configuration belongs outside the public root.
+contact-mail.php

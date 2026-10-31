@@ -1,0 +1,176 @@
+SLEIGHTLY TRICKY — CONTACT FORM / PLESK MAIL SETUP
+================================================
+
+The contact page is https://sleightlytricky.com/contact.php. It is linked from
+the website navigation, footer and the Visit the stall section.
+
+This version uses PHP's mail() function to hand messages to the LOCAL mail
+service on a Linux Plesk server (usually Postfix). Your webmail continues to
+work as before. The website does not need your webmail password or SMTP login.
+Mail is not enabled until you create the private configuration described below.
+
+1. UPLOAD THE WEBSITE UPDATE
+
+Back up httpdocs and private/sleightly-tricky. Extract this deployment ZIP in
+the domain folder ABOVE httpdocs, merging the new httpdocs with the existing
+one. Keep all existing private data and any customised app/config.php.
+
+The ZIP also contains this guide and CONTACT-MAIL.example.php outside httpdocs.
+These are instructions/templates, not live mail settings. Do not move them into
+httpdocs. Do not replace the private directory or create a new owner account.
+
+2. CHOOSE YOUR MAILBOX
+
+In Plesk, select the domain, then Mail. You can use an existing mailbox on
+sleightlytricky.com or choose Create Email Address and create, for example:
+
+    contact@sleightlytricky.com
+
+Enable the mailbox and set its password if creating one. Open webmail and check
+that you can send and receive a normal email. Creating an address does not change
+the website's owner/editor login. Keep the mailbox password in your password
+manager; it is not used in the contact form configuration.
+
+The example below uses contact@sleightlytricky.com. Replace it with YOUR real
+mailbox if you use a different address. This example does not create a mailbox.
+
+3. CHECK THE DOMAIN'S MAIL SERVICE
+
+In Mail > Mail Settings (or Websites & Domains > Mail Settings), open the domain.
+Make sure the mail service is active and the domain is configured to receive
+mail locally, since you use this Plesk server for webmail.
+
+On the server, the mail service must be running. If you manage the whole server,
+check Tools & Settings > Services Management and Mail Server Settings. Your host
+can check this if you only have a subscription login. The server must permit
+local PHP scripts to submit mail via Sendmail. Check any outgoing-mail limits for
+the domain/subscription. Plesk labels and options vary by version and permissions.
+
+In the domain's PHP Settings, use PHP 8.2+ and make sure mail is not listed in
+disable_functions. The server's sendmail_path must point to its working local
+mail submission command (commonly /usr/sbin/sendmail -t -i). Keep your host's
+working path; ask the host to fix it if absent. Do not add a public phpinfo page.
+No mail-server ports need to be exposed specifically for this local handoff.
+
+4. CREATE THE PRIVATE WEBSITE MAIL SETTINGS
+
+In Plesk File Manager, go UP from httpdocs into the domain's top-level folder.
+Open private, then sleightly-tricky. This is the same folder that already holds
+site.sqlite, setup-key.txt and your private uploaded files.
+
+Copy CONTACT-MAIL.example.php into that private/sleightly-tricky folder and
+rename the copy to:
+
+    contact-mail.php
+
+Edit it so its complete contents are, using your actual addresses:
+
+    <?php
+    return [
+        'to' => 'contact@sleightlytricky.com',
+        'from' => 'contact@sleightlytricky.com',
+    ];
+
+Save it. Keep the <?php opening line and the commas, quotes and semicolon.
+Do not add a closing PHP tag. The file must remain OUTSIDE httpdocs.
+
+Expected layout:
+
+    <domain folder>/httpdocs/contact.php
+    <domain folder>/httpdocs/app/contact.php
+    <domain folder>/private/sleightly-tricky/contact-mail.php
+    <domain folder>/private/sleightly-tricky/site.sqlite
+
+If your app/config.php has a custom storage_dir, put contact-mail.php in THAT
+private directory instead. Keep its existing storage_dir and HTTPS settings.
+
+The 'to' address receives enquiries. It may be a different mailbox you control.
+The 'from' address should be a real mailbox on the website's own domain, hosted
+on this Plesk server. A single address is supported in each setting. Do not use
+a visitor's address, a display name, or a comma-separated list in either field.
+
+For example, you can send FROM contact@sleightlytricky.com TO your existing
+Plesk inbox. Replies in webmail go to the visitor automatically, because the
+form sets Reply-To to the visitor's validated email address. No automatic email
+is sent to visitors, and the website does not keep a database copy of messages.
+
+Make the file readable by the site's PHP user, with no public access. Use owner
+read/write permissions (600) where your hosting permits it; ask your host about
+ownership if PHP cannot read it. Do not commit this live file to GitHub. Keep it
+when upgrading the site: the ZIP never replaces your private configuration.
+
+5. CHECK EMAIL AUTHENTICATION AND DNS
+
+Enable signing of outgoing mail with DKIM in the domain's Mail Settings if it
+is available. If Plesk hosts the domain's authoritative DNS, verify its DKIM and
+mail DNS records are present. If DNS is hosted elsewhere (for example Cloudflare),
+copy the DKIM records Plesk shows into that provider's DNS panel.
+
+Check the domain's EXISTING SPF TXT record authorises the actual outgoing mail
+server or relay. Ask the host for the correct value/IP. Edit the existing SPF
+record if necessary; do not create a second SPF record or overwrite an existing
+provider's settings with a generic example. Keep your MX records pointing to
+your working Plesk mail service. A public mail hostname should have correct A/
+AAAA records; its advertised hostname and reverse DNS/PTR should agree. PTR is
+normally set by the server/IP provider. Check the existing DMARC policy with
+your host if external recipients reject mail.
+
+Do not change working DNS blindly. Because you already use Plesk webmail, some
+or all of this may already be configured. These settings affect delivery to
+external providers; even a correctly submitted message can be filtered as spam.
+
+6. SEND A REAL TEST FROM THE WEBSITE
+
+Open https://sleightlytricky.com/contact.php and refresh. Once the private file
+is valid and PHP mail is available, Send message becomes enabled.
+
+Submit a short test using a different email address that you can check. Confirm:
+- The website displays Message sent.
+- The enquiry arrives in the configured 'to' inbox (also check Spam/Junk).
+- The sender is the configured domain mailbox.
+- Clicking Reply in webmail addresses the visitor's email, not the domain mailbox.
+- Refreshing the success page does not send another email.
+
+For an external 'to' address, test that destination too. A success message means
+the local mail server accepted the message for delivery. It does not guarantee
+inbox delivery. We tested the form using an isolated mail capture; real delivery
+must be tested on YOUR Plesk server after this setup.
+
+The form has a hidden spam field, session validation and a limit of five
+submissions per IP address every 15 minutes, including invalid form submissions.
+After repeated tests, wait 15 minutes if the rate-limit message appears. Visitors
+can submit without JavaScript. Name, email, topic and message are required.
+
+7. IF SOMETHING DOES NOT WORK
+
+Form temporarily unavailable / Send disabled:
+- Check the exact private path and filename: contact-mail.php.
+- Check it returns the array above and both addresses are valid single mailboxes.
+- Check PHP can read it, and that mail is not disabled by the host.
+- Look in the domain's Plesk Logs for a contact mail configuration/handoff error.
+  Never paste mailbox passwords or private message contents into public logs.
+
+We couldn't send your message:
+- Confirm PHP mail() and sendmail_path are working for the selected PHP handler.
+- Check local mail service status, script/Sendmail permissions and sending limits.
+- Your host may need to allow this subscription's PHP user to submit mail.
+
+Message sent but no email:
+- Check the recipient spelling and Spam/Junk folder.
+- If you administer the server, inspect the mail queue/mail logs using Plesk's
+  available mail troubleshooting tools. On Linux, mail logs are often in
+  /var/log/maillog or /var/log/mail.log; your host can find the correct location.
+- Check for a deferred/rejected message, a full mailbox, disabled mail service,
+  outgoing rate limits or a blocked outbound port at the host/provider.
+- Check the domain's DKIM/SPF, sender address, reverse DNS and recipient policy.
+- If your host requires an authenticated external SMTP relay and does not offer
+  local PHP mail, ask it to configure the Plesk mail server's relay. This release
+  uses local mail(); it does not store SMTP credentials in the website.
+
+Your form has expired:
+- Reload the page and submit again. Do not resend an old browser POST. Duplicate
+  successful submissions are blocked so they cannot send another copy.
+
+Messages are handled in your chosen mailbox. Set your own access and retention
+rules there. The form only uses its private rate-limit data for abuse prevention;
+message contents are not saved to site.sqlite or the site's application logs.

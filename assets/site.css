@@ -52,3 +52,45 @@
 /* Linked lessons share the collection renderer, including its exact card art. */
 .lesson-product-visual .product-scene{width:100%}.lesson-product-visual .lesson-symbol{top:auto;left:auto;right:20px;bottom:18px;box-shadow:0 4px 14px #24101c15}.lesson-product-art{display:block;position:relative;min-height:520px}.lesson-product-art>.product-image,.lesson-product-art>.product-scene{position:absolute;inset:0;width:100%;height:100%}.lesson-product-art>.product-image{padding:40px}.lesson-product-art .scene-card{width:150px;top:calc(50% - 120px)}.lesson-product-art .scene-card-one{left:calc(50% - 128px)}.lesson-product-art .scene-card-two{left:calc(50% - 18px)}.lesson-product-art .scene-card-three{width:120px;left:calc(50% + 34px)}.lesson-product-art .prop-art{padding:45px}.lesson-product-art .prop-photo{object-fit:cover}
 @media(max-width:700px){.lesson-product-art{min-height:300px;height:300px}.lesson-product-art>.product-image{padding:24px}.lesson-product-art .scene-card{width:110px;top:calc(50% - 86px)}.lesson-product-art .scene-card-one{left:calc(50% - 94px)}.lesson-product-art .scene-card-two{left:calc(50% - 13px)}.lesson-product-art .scene-card-three{width:90px;left:calc(50% + 25px)}.lesson-product-art .prop-art{padding:20px}}
+
+/* Contact uses the same cream surfaces, burgundy accents and card artwork. */
+.contact-main{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:90px;padding-block:65px 115px;align-items:start}
+.contact-intro{position:relative;min-width:0;padding-top:10px}
+.contact-intro h1{font-size:clamp(62px,6.5vw,94px);line-height:1.02;letter-spacing:-.065em}
+.contact-intro h1>span{color:var(--wine)}
+.contact-intro>p{max-width:380px;font-size:16px;line-height:1.9;color:var(--grey);margin-top:26px}
+.contact-visit{margin-top:38px;padding-top:27px;border-top:1px solid var(--line);max-width:360px}
+.contact-visit h2{font-size:24px;margin-bottom:15px}
+.contact-visit p{font-size:14px;color:var(--grey);white-space:pre-line}
+.contact-visit .text-link{margin-top:20px;font-size:13px}
+.contact-direct{display:inline-block;font-size:14px;color:var(--wine);margin-top:22px;overflow-wrap:anywhere}
+.contact-art{width:110px;transform:rotate(-12deg);margin:42px 0 0 25px;filter:drop-shadow(0 12px 12px #40221d1a)}
+.contact-art svg{display:block;width:100%;height:auto}
+.contact-card{min-width:0;padding:35px;background:var(--white);border:1px solid #e2d8ca;border-radius:20px;box-shadow:0 12px 40px #42281905}
+.contact-card h2{font-size:33px;line-height:1.2;letter-spacing:-.045em}
+.contact-card-intro{font-size:14px;color:var(--grey);margin-top:12px}
+.contact-form{margin-top:28px;position:relative}
+.contact-field-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.contact-field{display:flex;flex-direction:column;gap:8px;margin-bottom:21px;min-width:0}
+.contact-field>span:first-child{font-size:13px;font-weight:600;color:#504640}
+.contact-field input,.contact-field select,.contact-field textarea{width:100%;min-width:0;min-height:48px;font-family:var(--sans);font-size:16px;color:var(--ink);background:#fffefa;border:1px solid #dcd1c2;border-radius:9px;padding:11px 13px;line-height:1.6;scroll-margin-top:145px}
+.contact-field textarea{min-height:165px;resize:vertical}
+.contact-field :is(input,select,textarea):focus{outline:2px solid #a76a76;outline-offset:2px;background:#fff}
+.contact-field [aria-invalid=true]{border-color:var(--red)}
+.contact-field-error{color:#942c3a;font-size:12px;line-height:1.6}
+.contact-privacy{font-size:12px;line-height:1.8;color:var(--grey);margin-bottom:22px}
+.contact-form>.button{font-size:13px;justify-content:center}
+.contact-form>.button:disabled{opacity:.5;cursor:default;transform:none}
+.contact-feedback{padding:15px 18px;border:1px solid #dfb8ad;border-radius:10px;background:#fff3ed;color:#8b3940;font-size:13px;line-height:1.8;margin-top:23px}
+.contact-feedback ul{margin:8px 0 0;padding-left:20px}
+.contact-feedback a{text-decoration:underline;text-underline-offset:3px}
+.contact-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.contact-sent{padding-block:22px}
+.contact-sent>.icon{width:42px;height:42px;padding:9px;border:1px solid #ced8c4;background:#eff3ec;color:#3c6047;border-radius:50%;margin-bottom:25px}
+.contact-sent p{font-size:15px;line-height:1.9;color:var(--grey);margin-top:20px}
+.contact-sent>.button{margin-top:28px;font-size:13px}
+.visit-message{margin-left:24px;font-size:13px;display:inline-flex;gap:10px;align-items:center;color:var(--wine)}
+@media(max-width:1200px){.contact-main{gap:55px;padding-top:50px}.contact-card{padding:28px}.contact-intro h1{font-size:74px}.contact-field-pair{grid-template-columns:minmax(0,1fr);gap:0}}
+@media(max-width:960px){.contact-main{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:35px;padding-top:40px}.contact-intro h1{font-size:64px}.contact-intro>p{font-size:14px}.contact-card{padding:25px}.contact-card h2{font-size:29px}.contact-art{width:90px}}
+@media(max-width:700px){.contact-main{grid-template-columns:minmax(0,1fr);gap:30px;padding-block:25px 75px}.contact-intro{padding-top:0}.contact-intro h1{font-size:58px}.contact-intro h1 br{display:none}.contact-intro>p{max-width:none;font-size:14px;margin-top:20px}.contact-visit{margin-top:22px;padding-top:20px;max-width:none}.contact-visit h2{font-size:22px;margin-bottom:10px}.contact-visit .text-link{margin-top:12px}.contact-art{display:none}.contact-direct{font-size:13px;margin-top:16px}.contact-card{padding:25px 22px;border-radius:16px}.contact-card h2{font-size:29px}.contact-card-intro{font-size:13px}.contact-form{margin-top:24px}.contact-field{margin-bottom:19px}.contact-form>.button{width:100%}.contact-privacy{font-size:11px}.visit-message{margin:18px 0 0;display:flex;width:fit-content}.contact-feedback{font-size:12px;padding:13px 15px}}
+@media(max-width:360px){.contact-intro h1{font-size:50px}.contact-card{padding:23px 18px}.contact-card h2{font-size:27px}}

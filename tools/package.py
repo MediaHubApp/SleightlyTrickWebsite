@@ -5,12 +5,14 @@ from time import localtime
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 root = Path(__file__).resolve().parents[1]
-public_files = ['.htaccess', 'favicon.svg', 'index.php', 'instructions.php',
+public_files = ['.htaccess', 'favicon.svg', 'index.php', 'contact.php', 'instructions.php',
                 'instruction-video.php', 'media.php', 'robots.txt', 'setup.php']
 for directory in ['admin', 'app', 'assets', 'images']:
     public_files.extend(str(p.relative_to(root)) for p in (root / directory).rglob('*') if p.is_file())
 entries = {f'httpdocs/{name}': root / name for name in sorted(public_files)}
 entries['INSTALL-PLESK.txt'] = root / 'INSTALL-PLESK.txt'
+entries['CONTACT-PLESK.txt'] = root / 'CONTACT-PLESK.txt'
+entries['CONTACT-MAIL.example.php'] = root / 'CONTACT-MAIL.example.php'
 checksums = ''.join(f'{sha256(path.read_bytes()).hexdigest()}  {name}\n' for name, path in sorted(entries.items()))
 (root / 'SHA256SUMS.txt').write_text(checksums)
 output = root / 'releases'
